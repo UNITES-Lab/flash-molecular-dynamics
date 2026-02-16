@@ -1,4 +1,4 @@
-# FlashMolecularDynamics: High-performance GPU kernels for molecular dynamics
+# FlashMD: High-performance GPU kernels for molecular dynamics
 
 Pre-prints:
 * Fast and accurate coarse-grained neural network molecular dynamics [[arXiv]](https://arxiv.org/pdf/2602.13140)
