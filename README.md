@@ -3,6 +3,7 @@
 Pre-prints:
 * Fast and accurate coarse-grained neural network molecular dynamics [[arXiv]](https://arxiv.org/pdf/2602.13140)
 
+**_Code is supposed to be released before February 22._**
 
 ## Reference
 ```
