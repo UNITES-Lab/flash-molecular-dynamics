@@ -1,4 +1,4 @@
-# <img src="static/logo.png" alt="" width="45" style="vertical-align: middle;"> FlashMolecularDynamics
+# <img src="static/logo.png" alt="" width="100" style="vertical-align: bottom;"> FlashMolecularDynamics
 
 High-performance GPU kernels for neural network molecular dynamics simulation.
 
