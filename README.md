@@ -1,9 +1,12 @@
-<img src="static/flashmd-logo.png" alt="FlashMD" width="400">
+<img src="static/flashmd-logo.png" alt="FlashMD" width="500">
 
 
-Flash Molecular Dynamics: High-performance GPU kernels for neural network molecular dynamics simulation.
+## Flash Molecular Dynamics: High-performance GPU kernels for neural network molecular dynamics simulation.
 
-Preprint: "FlashSchNet: Fast and Accurate Coarse-Grained Neural Network Molecular Dynamics" [[arXiv]](https://arxiv.org/abs/2602.13140)
+Preprint: "FlashSchNet: Fast and Accurate Coarse-Grained Neural Network Molecular Dynamics" 
+
+- Author: [Pingzhi Li](https://pingzhili.github.io/), [Hongxuan Li](https://scholar.google.com/citations?user=Cg8IbW8AAAAJ&hl=en), [Zirui Liu](https://zirui-ray-liu.github.io/), [Xingcheng Lin](https://lingroup.wordpress.ncsu.edu/), [Tianlong Chen](https://tianlong-chen.github.io/)
+- Paper: [[arXiv]](https://arxiv.org/abs/2602.13140)
 
 FlashMD provides Triton-optimized kernels that accelerate neural network force field evaluation during MD simulation. Currently supports **CGSchNet**; we are actively incorporating more architectures.
 
