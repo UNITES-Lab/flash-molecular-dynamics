@@ -86,22 +86,21 @@ Key optimizations under the hood:
 
 ## Pre-trained models
 
-Available on HuggingFace: [`pingzhili/cg-schnet`](https://huggingface.co/pingzhili/cg-schnet)
+### CGSchNet
 
-- `model_and_prior.pt` -- Pre-trained CGSchNet with physical priors
-- `1enh_configurations.pt` -- Initial configurations for 1ENH protein
+Coarse-grained SchNet force field from [Charron et al., *Nat. Chem.* 2025](https://doi.org/10.1038/s41557-025-01874-0).
+
+| Model | HuggingFace | Files |
+|---|---|---|
+| CGSchNet (1ENH) | [`pingzhili/cg-schnet`](https://huggingface.co/pingzhili/cg-schnet) | `model_and_prior.pt`, `1enh_configurations.pt` |
+
+*More models coming soon.*
 
 ## Citation
 
-```bibtex
-@article{li2025cgschnet,
-  title={Transferable coarse-grained models of proteins by graph neural network and automatic differentiation},
-  author={Li, Pingzhi and Chen, Yaoyi and Musil, F{\'e}lix and others},
-  journal={Nature Chemistry},
-  year={2025},
-  doi={10.1038/s41557-025-01874-0}
-}
+If you use FlashMD, please cite:
 
+```bibtex
 @misc{li2026flashschnet,
   title={FlashSchNet: Fast and Accurate Coarse-Grained Neural Network Molecular Dynamics},
   author={Li, Pingzhi and Li, Hongxuan and Liu, Zirui and Lin, Xingcheng and Chen, Tianlong},
@@ -109,6 +108,20 @@ Available on HuggingFace: [`pingzhili/cg-schnet`](https://huggingface.co/pingzhi
   eprint={2602.13140},
   archivePrefix={arXiv},
   url={https://arxiv.org/abs/2602.13140},
+}
+```
+
+If you use the CGSchNet model, please also cite:
+
+```bibtex
+@article{charron2025cgschnet,
+  title={Navigating protein landscapes with a machine-learned transferable coarse-grained model},
+  author={Charron, Nicholas E. and Bonneau, Klara and Pasos-Trejo, Aldo S. and others},
+  journal={Nature Chemistry},
+  volume={17},
+  pages={1284--1292},
+  year={2025},
+  doi={10.1038/s41557-025-01874-0}
 }
 ```
 
