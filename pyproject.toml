@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flashmd"
+version = "0.1.0"
+description = "Fast molecular dynamics simulation with Triton-accelerated neural network force fields"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.10"
+authors = [
+    {name = "Pingzhi Li"},
+]
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = [
+    "torch>=2.6.0",
+    "torch-geometric>=2.6.1",
+    "torch-cluster",
+    "numpy>=1.26.4",
+    "huggingface-hub",
+    "jsonargparse[signatures]>=4.42.0",
+    "scipy>=1.14.0",
+    "packaging",
+    "pyyaml>=6.0.3",
+    "ruamel.yaml",
+    "tqdm>=4.67.1",
+    "loguru>=0.7.0",
+    "nvtx",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "coverage[toml]",
+]
+
+[tool.setuptools]
+package-dir = {"flashmd" = "src/flashmd"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.urls]
+Homepage = "https://github.com/unites-lab/flash-molecular-dynamics"
+Issues = "https://github.com/unites-lab/flash-molecular-dynamics/issues"
+
+[project.scripts]
+flashmd-langevin = "flashmd.scripts.nvt_langevin:main"
+flashmd-pt-langevin = "flashmd.scripts.nvt_pt_langevin:main"
+flashmd-nve-verlet = "flashmd.scripts.nve_verlet:main"
+
+[tool.black]
+line-length = 80
+target-version = ['py310', 'py311', 'py312']
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra"
+testpaths = [
+    "tests",
+]
+markers = [
+    "heavy: test that should be skipped in --light mode"
+]
+filterwarnings = [
+    "ignore::DeprecationWarning"
+]
