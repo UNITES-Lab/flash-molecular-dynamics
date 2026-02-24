@@ -1,6 +1,7 @@
-# <img src="static/logo.png" alt="" width="100" style="vertical-align: bottom;"> FlashMolecularDynamics
+<img src="static/flashmd-logo.png" alt="FlashMD" width="400">
 
-High-performance GPU kernels for neural network molecular dynamics simulation.
+
+Flash Molecular Dynamics: High-performance GPU kernels for neural network molecular dynamics simulation.
 
 Preprint: "FlashSchNet: Fast and Accurate Coarse-Grained Neural Network Molecular Dynamics" [[arXiv]](https://arxiv.org/abs/2602.13140)
 
