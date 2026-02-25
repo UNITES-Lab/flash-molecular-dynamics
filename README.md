@@ -73,7 +73,7 @@ You can still fine-tune individual kernels via environment variables (`MLCG_USE_
 
 ## Performance
 
-Benchmarked on 1ENH protein (batch size 128, RTX PRO 6000 96fGB GPU):
+Benchmarked on 1ENH protein (batch size 128, RTX PRO 6000 96GB GPU):
 
 | Configuration | Throughput (timestep·mol/s) | GPU Memory (GB) | Speedup |
 |---|---|---|---|
