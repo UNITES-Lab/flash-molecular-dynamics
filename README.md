@@ -96,7 +96,7 @@ Coarse-grained SchNet force field from [Charron et al., *Nat. Chem.* 2025](https
 
 | Model | HuggingFace | Files |
 |---|---|---|
-| CGSchNet (1ENH) | [`pingzhili/cg-schnet`](https://huggingface.co/pingzhili/cg-schnet) | `model_and_prior.pt`, `1enh_configurations.pt` |
+| CGSchNet (1ENH) | [`pingzhili/cg-schnet`](https://huggingface.co/pingzhili/cg-schnet) | `model_and_prior.pt`, `1enh_configurations.pt`, ... |
 
 *More models coming soon.*
 
