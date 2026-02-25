@@ -14,7 +14,7 @@ FlashMD provides Triton-optimized kernels that accelerate neural network force f
 ## Install
 
 ```bash
-pip install flashmd
+pip install flash-molecular-dynamics
 ```
 
 Or from source:

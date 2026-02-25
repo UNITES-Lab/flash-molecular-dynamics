@@ -53,11 +53,40 @@ def get_refreshed_cfconv_layer(old_cfconv: CFConv):
     return new_cfconv
 
 
+def _matches_by_name(obj, model_type):
+    """Check if obj matches model_type by class name hierarchy.
+
+    Handles cross-package matches (e.g. mlcg.nn.schnet.StandardSchNet
+    matching flashmd.models.schnet.SchNet) by comparing base class names.
+    """
+    if isinstance(obj, model_type):
+        return True
+    # Also match by class name for cross-package compatibility
+    # (model saved with mlcg, loaded in flashmd)
+    target_name = model_type.__name__
+    for cls in type(obj).__mro__:
+        if cls.__name__ in (target_name, f"Standard{target_name}"):
+            return True
+    return False
+
+
+def _is_sumout_like(obj):
+    """Check if obj is SumOut or mlcg equivalent."""
+    return isinstance(obj, SumOut) or type(obj).__name__ == "SumOut"
+
+
+def _is_gradientsout_like(obj):
+    """Check if obj is GradientsOut or mlcg equivalent."""
+    return isinstance(obj, GradientsOut) or type(
+        obj
+    ).__name__ == "GradientsOut"
+
+
 def _search_for_model(
     top_level: torch.nn.Module, model_type: Type[torch.nn.Module]
 ):
     """Recursively search for model_type in all submodules."""
-    if isinstance(top_level, model_type):
+    if _matches_by_name(top_level, model_type):
         yield top_level
     elif isinstance(top_level, (int, str, float, torch.Tensor, list)):
         pass
@@ -70,9 +99,9 @@ def _search_for_model(
     elif isinstance(top_level, torch.nn.ModuleList):
         for module in top_level:
             yield from _search_for_model(module, model_type)
-    elif isinstance(top_level, SumOut):
+    elif _is_sumout_like(top_level):
         yield from _search_for_model(top_level.models, model_type)
-    elif isinstance(top_level, GradientsOut):
+    elif _is_gradientsout_like(top_level):
         yield from _search_for_model(top_level.model, model_type)
     elif isinstance(top_level, tuple):
         for module in top_level:
@@ -172,6 +201,29 @@ def fixed_pyg_inspector():
             del sys.modules["torch_geometric.nn.conv.utils.inspector"]
 
 
+def _patch_missing_feature_flags(module):
+    """Patch missing feature-flag attributes on modules loaded from old
+    checkpoints.
+
+    Old checkpoints saved before Triton optimization flags were added
+    will be missing attributes like ``use_triton``, ``use_fused_tanh_linear``,
+    etc. These default to ``False`` so the model falls back to the
+    vanilla PyTorch code path.
+    """
+    # Map: class-name suffix -> {attr: default}
+    flags = {
+        "CFConv": {"use_triton": False},
+        "InteractionBlock": {"use_fused_tanh_linear": False},
+    }
+    for mod in module.modules():
+        cls_name = type(mod).__name__
+        for suffix, attrs in flags.items():
+            if cls_name.endswith(suffix):
+                for attr, default in attrs.items():
+                    if not hasattr(mod, attr):
+                        setattr(mod, attr, default)
+
+
 def load_and_adapt_old_checkpoint(f, **kwargs):
     """Load and adapt an older checkpoint from training with a previous
     version of pyg. Using this function instead of `torch.load` can bypass
@@ -186,5 +238,6 @@ def load_and_adapt_old_checkpoint(f, **kwargs):
     """
     with fixed_pyg_inspector():
         module = torch.load(f, **kwargs, weights_only=False)
+        _patch_missing_feature_flags(module)
         refresh_module_(module, SchNet)
     return module
