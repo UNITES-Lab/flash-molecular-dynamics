@@ -118,15 +118,17 @@ If you use FlashMD, please cite:
 If you use the CGSchNet model, please also cite:
 
 ```bibtex
-@article{charron2025cgschnet,
+@article{charron2025navigating,
   title={Navigating protein landscapes with a machine-learned transferable coarse-grained model},
-  author={Charron, Nicholas E. and Bonneau, Klara and Pasos-Trejo, Aldo S. and others},
-  journal={Nature Chemistry},
+  author={Charron, Nicholas E and Bonneau, Klara and Pasos-Trejo, Aldo S and Guljas, Andrea and Chen, Yaoyi and Musil, F{\'e}lix and Venturin, Jacopo and Gusew, Daria and Zaporozhets, Iryna and Kr{\"a}mer, Andreas and others},
+  journal={Nature chemistry},
   volume={17},
+  number={8},
   pages={1284--1292},
   year={2025},
-  doi={10.1038/s41557-025-01874-0}
+  publisher={Nature Publishing Group UK London}
 }
+
 ```
 
 ## License
