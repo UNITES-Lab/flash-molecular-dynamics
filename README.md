@@ -1,5 +1,6 @@
-<img src="static/flashmd-logo.png" alt="FlashMD" width="500">
+<img src="static/flashmd-logo.png" alt="FlashMD" width="600">
 
+<img src="static/flashmd-demo.gif" alt="CGSchNet vs FlashMD simulation comparison" width="600">
 
 ## Flash Molecular Dynamics: High-performance GPU kernels for neural network molecular dynamics simulation.
 
@@ -9,6 +10,8 @@ Preprint: "FlashSchNet: Fast and Accurate Coarse-Grained Neural Network Molecula
 - Paper: [[arXiv]](https://arxiv.org/abs/2602.13140)
 
 FlashMD provides Triton-optimized kernels that accelerate neural network force field evaluation during MD simulation. Currently supports **CGSchNet**; we are actively incorporating more architectures.
+
+![Alt Text](./static/flashmd-demo.gif)
 
 ## Install
 
@@ -72,7 +75,7 @@ You can still fine-tune individual kernels via environment variables (`MLCG_USE_
 
 ## Performance
 
-Benchmarked on 1ENH protein (batch size 128, A100 80GB GPU):
+Benchmarked on 1ENH protein (batch size 128, RTX PRO 6000 96fGB GPU):
 
 | Configuration | Throughput (timestep·mol/s) | GPU Memory (GB) | Speedup |
 |---|---|---|---|
