@@ -69,7 +69,7 @@ flashmd-langevin --disable_optim --config config.yaml \
   --model_file model.pt --structure_file configs.pt --betas '[1.67]'
 ```
 
-You can still fine-tune individual kernels via environment variables (`MLCG_USE_TRITON_MESSAGE_PASSING`, `MLCG_USE_FUSED_RBF`, `MLCG_USE_CSR`, `MLCG_USE_SRC_CSR_GRAD_X`, `MLCG_USE_FUSED_TANH_LINEAR`), setting any to `0` to disable.
+You can still adjust individual kernels via environment variables (`MLCG_USE_TRITON_MESSAGE_PASSING`, `MLCG_USE_FUSED_RBF`, `MLCG_USE_CSR`, `MLCG_USE_SRC_CSR_GRAD_X`, `MLCG_USE_FUSED_TANH_LINEAR`), setting any to `0` to disable.
 
 ## Performance
 
