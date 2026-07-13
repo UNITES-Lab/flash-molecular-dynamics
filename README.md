@@ -73,6 +73,8 @@ You can still adjust individual kernels via environment variables (`MLCG_USE_TRI
 
 ## Performance
 
+[Explore the interactive protein-size and ensemble-size benchmark.](https://unites-lab.github.io/flash-molecular-dynamics/benchmarks/protein-batch-scaling/)
+
 Benchmarked on 1ENH protein (batch size 128, RTX PRO 6000 96GB GPU):
 
 | Configuration | Throughput (timestep·mol/s) | GPU Memory (GB) | Speedup |
