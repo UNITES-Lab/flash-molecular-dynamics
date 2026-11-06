@@ -311,6 +311,18 @@ class _Simulation(object):
         self.force_compile = force_compile
         self._compile_model_flag = compile_model
 
+    @property
+    def compile_model(self) -> bool:
+        """Whether `_attach_model` wraps the model in `torch.compile`."""
+        return self._compile_model_flag
+
+    @compile_model.setter
+    def compile_model(self, value: bool) -> None:
+        # The scripts' --disable_optim sets this attribute; before this
+        # property existed the assignment created an unused attribute and
+        # torch.compile stayed on.
+        self._compile_model_flag = value
+
     def attach_model_and_configurations(
         self,
         model: torch.nn.Module,

@@ -28,7 +28,10 @@ from flashmd.simulation.logging import setup_simulation_logging
 
 def main():
     torch.jit.set_fusion_strategy([("DYNAMIC", 3)])
-    torch.set_float32_matmul_precision("high")
+    # TF32 matmuls only when optimizations are on; --disable_optim is the
+    # strict float32 reference.
+    if not _DISABLE_OPTIM:
+        torch.set_float32_matmul_precision("high")
 
     disable_overrides = {}
     if _DISABLE_OPTIM:

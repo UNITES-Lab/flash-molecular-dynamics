@@ -77,11 +77,11 @@ P1 that confirms and fixes it, or refutes it.
 | MACE | Global Triton geometry hook drops the `shifts` gradient and is not double-differentiable. | open |
 | MACE | `FixedOneHotFCTP` reuses primed element groups without checking composition. | open |
 | CGSchNet | Fused CFConv autograd returns `None` for `edge_weight`; the cutoff-envelope derivative may be missing from forces. | open |
-| CGSchNet | `--disable_optim` does not disable `torch.compile`. | open |
+| CGSchNet | `--disable_optim` does not disable `torch.compile`: the scripts set `simulation.compile_model`, but `_attach_model` reads `_compile_model_flag`. The Langevin and Verlet scripts also enable TF32 matmuls unconditionally, so the CLI reference arm was not strict float32. | fixed on `unify` (property plus TF32 only with optimizations); check whether any published baseline used these scripts |
 | CGSchNet | `fused_src_csr_grad_x` is wrong for `num_filters > 128`. | open |
 | CGSchNet | The fused RBF backward uses `math.pi` without importing `math`, so any `GaussianBasis` model with `MLCG_USE_FUSED_RBF=1` would raise `NameError` when forces are computed. The public checkpoint pickles `ExpNormalBasis`, so the fused RBF path may never run for it; reconcile with the 1.7x Flash RBF step in the FlashSchNet ablation. | open |
 | CGSchNet | The public checkpoint pickles `mlcg.nn.*` classes; loading needs mlcg or a class remap. | fixed in P0: `models/legacy_pickle.py`; CPU parity with upstream mlcg in `benchmarks/parity/cgschnet_cpu` |
-| CGSchNet | The fork's simulation loader sets `use_fused_tanh_linear=False` on checkpoints that lack the flag, which includes the public one, and the fork defaults `MLCG_USE_FUSED_TANH_LINEAR` to off; FlashMD defaults it on. Check which setting the paper's benchmark runs used. | open |
+| CGSchNet | Kernels that run for the public checkpoint (checked on the loaded model): the Triton CFConv is on in all 4 blocks; the fused tanh-linear kernel is off in all 4, because the pickle lacks `use_fused_tanh_linear` and both FlashMD and the fork patch it to False; the fused RBF kernel never runs, because the model uses `ExpNormalBasis`; 128 filters, so the source-CSR backward bug is not reached. Reconcile with the FlashSchNet ablation steps. | open |
 | CGSchNet | `gptq.py` is a plain fp16 cast; `MLCG_USE_FUSED_RBF` values other than 0 or 1 raise `NameError`; resume picks the init checkpoint. | open |
 
 ## Target layout
