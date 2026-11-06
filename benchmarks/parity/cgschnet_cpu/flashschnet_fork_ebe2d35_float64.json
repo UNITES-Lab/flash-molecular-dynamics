@@ -1,0 +1,445 @@
+{
+  "dtype": "float64",
+  "replicas": 8,
+  "num_atoms": 2152,
+  "tolerance_rel": 1e-09,
+  "worst_key": "energy",
+  "worst_rel": 0.0,
+  "total": {
+    "energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    }
+  },
+  "terms": {
+    "energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "SchNet.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "SchNet.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "n_term_bonds.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "n_term_bonds.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "bulk_bonds.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "bulk_bonds.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "c_term_bonds.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "c_term_bonds.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "n_term_angles.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "n_term_angles.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "bulk_angles.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "bulk_angles.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "c_term_angles.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "c_term_angles.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ALA_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ALA_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ARG_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ARG_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ASN_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ASN_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ASP_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ASP_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "CYS_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "CYS_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLN_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLN_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLU_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLU_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLY_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLY_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "HIS_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "HIS_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ILE_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ILE_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "LEU_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "LEU_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "LYS_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "LYS_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "MET_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "MET_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "PHE_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "PHE_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "PRO_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "PRO_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "SER_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "SER_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "THR_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "THR_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "TRP_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "TRP_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "TYR_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "TYR_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "VAL_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "VAL_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ALA_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ALA_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ARG_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ARG_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ASN_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ASN_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ASP_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ASP_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "CYS_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "CYS_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLN_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLN_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLU_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLU_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLY_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLY_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "HIS_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "HIS_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ILE_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ILE_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "LEU_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "LEU_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "LYS_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "LYS_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "MET_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "MET_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "PHE_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "PHE_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "PRO_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "PRO_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "SER_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "SER_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "THR_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "THR_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "TRP_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "TRP_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "TYR_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "TYR_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "VAL_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "VAL_psi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "pro_omega.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "pro_omega.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "non_pro_omega.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "non_pro_omega.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "gamma_1.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "gamma_1.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "gamma_2.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "gamma_2.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "non_bonded.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "non_bonded.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    }
+  },
+  "passed": true
+}

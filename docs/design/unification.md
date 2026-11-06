@@ -80,7 +80,8 @@ P1 that confirms and fixes it, or refutes it.
 | CGSchNet | `--disable_optim` does not disable `torch.compile`. | open |
 | CGSchNet | `fused_src_csr_grad_x` is wrong for `num_filters > 128`. | open |
 | CGSchNet | The fused RBF backward uses `math.pi` without importing `math`, so any `GaussianBasis` model with `MLCG_USE_FUSED_RBF=1` would raise `NameError` when forces are computed. The public checkpoint pickles `ExpNormalBasis`, so the fused RBF path may never run for it; reconcile with the 1.7x Flash RBF step in the FlashSchNet ablation. | open |
-| CGSchNet | The public checkpoint pickles `mlcg.nn.*` classes; loading needs mlcg or a class remap. | open |
+| CGSchNet | The public checkpoint pickles `mlcg.nn.*` classes; loading needs mlcg or a class remap. | fixed in P0: `models/legacy_pickle.py`; CPU parity with upstream mlcg in `benchmarks/parity/cgschnet_cpu` |
+| CGSchNet | The fork's simulation loader sets `use_fused_tanh_linear=False` on checkpoints that lack the flag, which includes the public one, and the fork defaults `MLCG_USE_FUSED_TANH_LINEAR` to off; FlashMD defaults it on. Check which setting the paper's benchmark runs used. | open |
 | CGSchNet | `gptq.py` is a plain fp16 cast; `MLCG_USE_FUSED_RBF` values other than 0 or 1 raise `NameError`; resume picks the init checkpoint. | open |
 
 ## Target layout
@@ -106,6 +107,8 @@ benchmarks/   protein-size scaling and per-model harnesses
 - [x] Benchmark harness moved from the server into `benchmarks/legacy`
 - [ ] Locked environment with all three upstreams on the cluster
 - [ ] Golden outputs from the current code on fixed inputs
+- [x] Public package loads the published CGSchNet checkpoint without mlcg
+  (`ExpNormalBasis` port, class remap, CPU parity with upstream mlcg)
 
 ### P1 Correctness gates
 
@@ -117,7 +120,6 @@ benchmarks/   protein-size scaling and per-model harnesses
 
 - [ ] `core/` and `engine/` extracted; `ExecutionConfig` replaces env vars
 - [ ] CGSchNet plugin; legacy import paths and commands still work
-- [ ] Class remap for the public checkpoint (it pickles `mlcg.nn.*`)
 - [ ] CUDA-graph replay for the SchNet step
 - Exit: force parity at fp32 tolerance; 1ENH at 64 replicas within 3% of
   golden throughput

@@ -1,0 +1,365 @@
+{
+  "dtype": "float32",
+  "replicas": 8,
+  "num_atoms": 2152,
+  "tolerance_rel": 0.0001,
+  "worst_key": "c_term_angles.forces",
+  "worst_rel": 3.30648522439214e-07,
+  "total": {
+    "energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "forces": {
+      "max_abs": 4.1961669921875e-05,
+      "max_rel": 1.2192756934863278e-07
+    }
+  },
+  "terms": {
+    "energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "forces": {
+      "max_abs": 4.1961669921875e-05,
+      "max_rel": 1.2192756934863278e-07
+    },
+    "SchNet.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "SchNet.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "n_term_bonds.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "n_term_bonds.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "bulk_bonds.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "bulk_bonds.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "c_term_bonds.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "c_term_bonds.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "n_term_angles.energy": {
+      "max_abs": 1.430511474609375e-06,
+      "max_rel": 2.0295435238653008e-07
+    },
+    "n_term_angles.forces": {
+      "max_abs": 1.71661376953125e-05,
+      "max_rel": 2.0852712840627905e-07
+    },
+    "bulk_angles.energy": {
+      "max_abs": 3.0517578125e-05,
+      "max_rel": 9.870442545239692e-08
+    },
+    "bulk_angles.forces": {
+      "max_abs": 4.1961669921875e-05,
+      "max_rel": 3.0340753136930465e-07
+    },
+    "c_term_angles.energy": {
+      "max_abs": 2.86102294921875e-06,
+      "max_rel": 2.6096412500077203e-07
+    },
+    "c_term_angles.forces": {
+      "max_abs": 3.0517578125e-05,
+      "max_rel": 3.30648522439214e-07
+    },
+    "ALA_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ALA_phi.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ARG_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ARG_phi.forces": {
+      "max_abs": 2.384185791015625e-07,
+      "max_rel": 3.993798110789717e-08
+    },
+    "ASN_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ASN_phi.forces": {
+      "max_abs": 4.76837158203125e-07,
+      "max_rel": 6.25416331834398e-08
+    },
+    "GLN_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLN_phi.forces": {
+      "max_abs": 2.384185791015625e-07,
+      "max_rel": 2.6407202870906592e-08
+    },
+    "GLU_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLU_phi.forces": {
+      "max_abs": 9.5367431640625e-07,
+      "max_rel": 9.3745207276278e-08
+    },
+    "GLY_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLY_phi.forces": {
+      "max_abs": 1.1920928955078125e-07,
+      "max_rel": 5.8729865640162584e-08
+    },
+    "ILE_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ILE_phi.forces": {
+      "max_abs": 2.384185791015625e-07,
+      "max_rel": 4.2914192985297515e-08
+    },
+    "LEU_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "LEU_phi.forces": {
+      "max_abs": 4.76837158203125e-07,
+      "max_rel": 5.575064564822725e-08
+    },
+    "LYS_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "LYS_phi.forces": {
+      "max_abs": 9.5367431640625e-07,
+      "max_rel": 1.2470513470898062e-07
+    },
+    "PHE_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "PHE_phi.forces": {
+      "max_abs": 4.76837158203125e-07,
+      "max_rel": 5.4630348119874715e-08
+    },
+    "PRO_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "PRO_phi.forces": {
+      "max_abs": 1.1920928955078125e-07,
+      "max_rel": 4.021707245290601e-08
+    },
+    "SER_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "SER_phi.forces": {
+      "max_abs": 4.76837158203125e-07,
+      "max_rel": 8.51653971628681e-08
+    },
+    "THR_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "THR_phi.forces": {
+      "max_abs": 1.1920928955078125e-07,
+      "max_rel": 7.3093089019196e-08
+    },
+    "TRP_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "TRP_phi.forces": {
+      "max_abs": 1.1920928955078125e-07,
+      "max_rel": 3.419403831045342e-08
+    },
+    "TYR_phi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "TYR_phi.forces": {
+      "max_abs": 2.9802322387695312e-08,
+      "max_rel": 5.505459544011414e-08
+    },
+    "ALA_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ALA_psi.forces": {
+      "max_abs": 2.384185791015625e-07,
+      "max_rel": 8.914161527281123e-08
+    },
+    "ARG_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ARG_psi.forces": {
+      "max_abs": 2.384185791015625e-07,
+      "max_rel": 8.550580058525301e-08
+    },
+    "ASN_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ASN_psi.forces": {
+      "max_abs": 1.1920928955078125e-07,
+      "max_rel": 4.6197630135490254e-08
+    },
+    "GLN_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLN_psi.forces": {
+      "max_abs": 2.384185791015625e-07,
+      "max_rel": 6.741711806921689e-08
+    },
+    "GLU_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLU_psi.forces": {
+      "max_abs": 2.384185791015625e-07,
+      "max_rel": 6.590675301681571e-08
+    },
+    "GLY_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "GLY_psi.forces": {
+      "max_abs": 2.384185791015625e-07,
+      "max_rel": 9.332462054675909e-08
+    },
+    "ILE_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "ILE_psi.forces": {
+      "max_abs": 1.1920928955078125e-07,
+      "max_rel": 4.281591724539515e-08
+    },
+    "LEU_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "LEU_psi.forces": {
+      "max_abs": 2.384185791015625e-07,
+      "max_rel": 8.148070650942846e-08
+    },
+    "LYS_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "LYS_psi.forces": {
+      "max_abs": 2.384185791015625e-07,
+      "max_rel": 5.8651652469252166e-08
+    },
+    "PHE_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "PHE_psi.forces": {
+      "max_abs": 2.384185791015625e-07,
+      "max_rel": 6.007808709448192e-08
+    },
+    "PRO_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "PRO_psi.forces": {
+      "max_abs": 2.9802322387695312e-08,
+      "max_rel": 3.251802620523674e-08
+    },
+    "SER_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "SER_psi.forces": {
+      "max_abs": 4.76837158203125e-07,
+      "max_rel": 1.3895941078986473e-07
+    },
+    "THR_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "THR_psi.forces": {
+      "max_abs": 2.384185791015625e-07,
+      "max_rel": 6.093598650243525e-08
+    },
+    "TRP_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "TRP_psi.forces": {
+      "max_abs": 1.1920928955078125e-07,
+      "max_rel": 3.8050140344137646e-08
+    },
+    "TYR_psi.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "TYR_psi.forces": {
+      "max_abs": 1.1920928955078125e-07,
+      "max_rel": 6.790897996433828e-08
+    },
+    "pro_omega.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "pro_omega.forces": {
+      "max_abs": 4.470348358154297e-08,
+      "max_rel": 2.8980308151094208e-08
+    },
+    "non_pro_omega.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "non_pro_omega.forces": {
+      "max_abs": 4.76837158203125e-07,
+      "max_rel": 1.3261899438199416e-07
+    },
+    "gamma_1.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "gamma_1.forces": {
+      "max_abs": 3.814697265625e-06,
+      "max_rel": 7.338697627751314e-08
+    },
+    "gamma_2.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "gamma_2.forces": {
+      "max_abs": 5.7220458984375e-06,
+      "max_rel": 1.028844478016783e-07
+    },
+    "non_bonded.energy": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    },
+    "non_bonded.forces": {
+      "max_abs": 0.0,
+      "max_rel": 0.0
+    }
+  },
+  "passed": true
+}
