@@ -44,6 +44,15 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser.add_argument(
         "--dtype", choices=("float32", "float64"), default="float64"
     )
+    parser.add_argument(
+        "--drop-empty-terms",
+        action="store_true",
+        help=(
+            "Remove prior terms with no interactions in the configurations "
+            "from both models. Upstream mlcg returns empty energies for them "
+            "and cannot sum the terms; the FlashSchNet fork returns zeros."
+        ),
+    )
     parser.add_argument("--output", type=pathlib.Path)
     return parser.parse_args(argv)
 
@@ -89,8 +98,25 @@ def _evaluate(
     dtype = getattr(torch, args.dtype)
     model = load_model(args.checkpoint).eval().to(dtype)
     configurations = load_data(args.configurations)
+    if args.drop_empty_terms:
+        _drop_empty_terms(model, configurations)
     batch = _batch(configurations, data_cls, args.replicas, noise, dtype)
     return _flatten(model(batch).out)
+
+
+def _drop_empty_terms(
+    model: torch.nn.Module, configurations: Sequence[Any]
+) -> None:
+    """Removes summed terms whose neighbor list is empty in every input."""
+    terms = model.models
+    for name in list(terms.keys()):
+        sizes = [
+            c.neighbor_list[name]["index_mapping"].shape[1]
+            for c in configurations
+            if name in c.neighbor_list
+        ]
+        if sizes and max(sizes) == 0:
+            del terms[name]
 
 
 def _reference_outputs(
