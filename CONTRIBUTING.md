@@ -39,18 +39,39 @@ pre-commit install
 
 | Marker | Meaning | Where it runs |
 |---|---|---|
-| none | CPU unit test | GitHub Actions on every push |
+| none | CPU unit test | GitHub Actions on every push and pull request |
+| `heavy` | slow, may download published weights | GitHub Actions weekly and on manual dispatch |
 | `gpu` | needs a CUDA GPU | the UNITES cluster or SkyPilot, see below |
-| `heavy` | slow; skipped with `--light` | nightly |
 
 Every fast path ships with a parity test against the unmodified reference
 path on identical inputs, and every custom `torch.autograd.Function` has a
 float64 `gradcheck`.
 
-Run the GPU tests on the UNITES cluster:
+## Continuous integration
+
+`.github/workflows/ci.yml` installs `requirements/ci-cpu.lock.txt`, a pinned
+CPU environment (torch CPU build, the matching `torch-cluster` wheel from the
+PyG index, and the dev tools), then runs ruff, mypy and the CPU tests. After
+changing dependencies in `pyproject.toml`, regenerate the lock:
 
 ```bash
-sbatch tools/cluster/gpu_tests.sbatch
+tools/ci/compile_lock.sh
+```
+
+`requirements/ci-cpu.constraints.txt` pins the torch version; it must match
+the PyG wheel page the script reads `torch-cluster` from.
+
+## GPU checks
+
+GitHub-hosted runners have no GPU. The correctness gates and golden captures
+run as Slurm jobs on the UNITES cluster, in the environment built by
+`tools/cluster/build_env.sh`:
+
+```bash
+PYTHON=$ENV/bin/python REPO=$PWD DATA=$DATA OUT=$OUT \
+    sbatch --export=ALL tools/gates/cgschnet_gpu_gates.sbatch
+sbatch tools/goldens/mace_goldens.sbatch
+sbatch tools/goldens/bioemu_goldens.sbatch
 ```
 
 ## Third-party code

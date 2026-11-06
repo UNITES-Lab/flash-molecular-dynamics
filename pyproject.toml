@@ -52,10 +52,10 @@ mace-cuda12 = ["cuequivariance-ops-torch-cu12>=0.9"]
 bioemu = ["bioemu==1.4.1"]
 all = ["flash-molecular-dynamics[mace,bioemu]"]
 dev = [
-    "pytest>=8",
+    "pytest==9.2.0",
     "coverage[toml]",
-    "ruff>=0.6",
-    "mypy>=1.10",
+    "ruff==0.17.4",
+    "mypy==2.4.1",
     "pre-commit",
 ]
 

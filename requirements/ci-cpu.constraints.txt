@@ -1,0 +1,3 @@
+# torch must match the PyG wheel index used for torch-cluster
+# (https://data.pyg.org/whl/torch-<version>+cpu.html).
+torch==2.10.0

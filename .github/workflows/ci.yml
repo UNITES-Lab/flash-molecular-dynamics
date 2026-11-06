@@ -4,39 +4,74 @@ on:
   push:
     branches: [main, unify]
   pull_request:
+  workflow_dispatch:
+  schedule:
+    # Weekly: the heavy tests download the published checkpoint.
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  # The lock pins exact versions across the PyTorch CPU index, PyPI and the
+  # PyG wheel page; let uv take each pin from whichever index has it.
+  UV_INDEX_STRATEGY: unsafe-best-match
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
+  check:
+    name: lint, types, CPU tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-      - name: Ruff lint
-        run: uvx ruff@0.15.21 check .
-      - name: Ruff format
-        run: uvx ruff@0.15.21 format --check .
-      - name: Mypy on ported modules
-        run: |
-          uv venv
-          uv pip install mypy==1.11.2 torch==2.10.0 --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
-          uv run mypy
-
-  test-cpu:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
         with:
           python-version: "3.12"
-      - name: Install CPU stack
+          activate-environment: true
+          enable-cache: true
+          cache-dependency-glob: requirements/ci-cpu.lock.txt
+
+      # The lock pins torch to the CPU build that matches the torch-cluster
+      # wheel; regenerate it with tools/ci/compile_lock.sh.
+      - name: Install the locked CPU environment
+        id: install
         run: |
-          uv venv --python 3.12
-          uv pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cpu
-          uv pip install torch_cluster -f https://data.pyg.org/whl/torch-2.10.0+cpu.html
-          uv pip install -e ".[dev]"
-      - name: Unit tests (no GPU)
-        run: uv run pytest -m "not gpu and not heavy" -q
+          uv pip install -r requirements/ci-cpu.lock.txt
+          uv pip install --no-deps -e .
+
+      - name: Ruff lint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: ruff check --output-format=github .
+      - name: Ruff format
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: ruff format --check .
+      - name: Mypy
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: mypy
+      - name: CPU tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pytest -m "not gpu and not heavy" -q
+
+  heavy:
+    name: heavy CPU tests
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          python-version: "3.12"
+          activate-environment: true
+          enable-cache: true
+          cache-dependency-glob: requirements/ci-cpu.lock.txt
+      - name: Install the locked CPU environment
+        run: |
+          uv pip install -r requirements/ci-cpu.lock.txt
+          uv pip install --no-deps -e .
+      - name: Heavy tests
+        run: pytest -m "heavy and not gpu" -q
