@@ -9,6 +9,7 @@ from .pyg_forward_compatibility import fixed_pyg_inspector
 from .pyg_forward_compatibility import get_refreshed_cfconv_layer
 from .pyg_forward_compatibility import load_and_adapt_old_checkpoint
 from .pyg_forward_compatibility import refresh_module_
+from .radial_basis import ExpNormalBasis
 from .radial_basis import GaussianBasis
 from .schnet import SchNet
 from .schnet import StandardSchNet
@@ -19,6 +20,7 @@ __all__ = [
     "MLP",
     "CosineCutoff",
     "EnergyOut",
+    "ExpNormalBasis",
     "GaussianBasis",
     "GradientsOut",
     "IdentityCutoff",

@@ -49,7 +49,7 @@ def from_pretrained(
 
 def download_file(
     repo_id: str = "pingzhili/cg-schnet",
-    filename: str = "1enh_configurations.pt",
+    filename: str = "configurations/1enh_configurations.pt",
     cache_dir: Optional[str] = None,
     revision: Optional[str] = None,
 ) -> Path:
@@ -62,7 +62,8 @@ def download_file(
     repo_id : str
         HuggingFace repository ID (default: "pingzhili/cg-schnet")
     filename : str
-        Name of the file to download
+        Path of the file inside the repository, for example
+        "configurations/1enh_configurations.pt" or "structures/1enh_5beads.pdb"
     cache_dir : str, optional
         Directory to cache downloaded files
     revision : str, optional

@@ -139,7 +139,9 @@ known-first-party = ["flashmd"]
 "src/flashmd/models/utils.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
 "src/flashmd/models/_module_init.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
 "src/flashmd/models/pyg_forward_compatibility.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
-"src/flashmd/models/radial_basis/**" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/models/radial_basis/base.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/models/radial_basis/gaussian.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/models/radial_basis/__init__.py" = ["D", "F401"]
 "src/flashmd/models/__init__.py" = ["D", "F401"]
 "src/flashmd/utils.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
 "src/flashmd/hub.py" = ["D", "UP"]
@@ -155,6 +157,8 @@ warn_redundant_casts = true
 files = [
     "src/flashmd/config.py",
     "src/flashmd/registry.py",
+    "src/flashmd/models/legacy_pickle.py",
+    "src/flashmd/models/radial_basis/exp_normal.py",
     "src/flashmd/models/base.py",
 ]
 

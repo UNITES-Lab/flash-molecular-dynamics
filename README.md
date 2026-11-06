@@ -36,7 +36,9 @@ from flashmd.hub import from_pretrained, download_file
 model = from_pretrained("pingzhili/cg-schnet")
 
 # Download initial configurations
-configs_path = download_file("pingzhili/cg-schnet", "1enh_configurations.pt")
+configs_path = download_file(
+    "pingzhili/cg-schnet", "configurations/1enh_configurations.pt"
+)
 ```
 
 ### Command-line simulation
@@ -98,7 +100,7 @@ Coarse-grained SchNet force field from [Charron et al., *Nat. Chem.* 2025](https
 
 | Model | HuggingFace | Files |
 |---|---|---|
-| CGSchNet (1ENH) | [`pingzhili/cg-schnet`](https://huggingface.co/pingzhili/cg-schnet) | `model_and_prior.pt`, `1enh_configurations.pt`, ... |
+| CGSchNet (1ENH) | [`pingzhili/cg-schnet`](https://huggingface.co/pingzhili/cg-schnet) | `model_and_prior.pt`, `configurations/1enh_configurations.pt`, ... |
 
 *More models coming soon.*
 

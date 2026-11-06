@@ -7,6 +7,7 @@ from jsonargparse.typing import Path_fr
 import torch
 
 from ..data import AtomicData
+from ..models import legacy_pickle
 from ..models import load_and_adapt_old_checkpoint
 from ..utils import dump_yaml
 from . import LangevinSimulation
@@ -119,9 +120,8 @@ def parse_simulation_config(
     )
 
     structures_fn = config.pop("structure_file")
-    initial_data_list = torch.load(
-        (structures_fn if isinstance(structures_fn, str) else structures_fn()),
-        weights_only=False,
+    initial_data_list = legacy_pickle.load(
+        (structures_fn if isinstance(structures_fn, str) else structures_fn())
     )
 
     # Adjust initial_data_list based on batch_size for profiling

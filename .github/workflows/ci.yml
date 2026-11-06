@@ -39,4 +39,4 @@ jobs:
           uv pip install torch_cluster -f https://data.pyg.org/whl/torch-2.10.0+cpu.html
           uv pip install -e ".[dev]"
       - name: Unit tests (no GPU)
-        run: uv run pytest -m "not gpu" -q
+        run: uv run pytest -m "not gpu and not heavy" -q

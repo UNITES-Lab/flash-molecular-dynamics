@@ -10,6 +10,7 @@ import warnings
 
 import torch
 
+from flashmd.models import legacy_pickle
 from flashmd.models.gradients import GradientsOut
 from flashmd.models.gradients import SumOut
 import flashmd.models.schnet
@@ -235,10 +236,12 @@ def load_and_adapt_old_checkpoint(f, **kwargs):
     ----------
     f (Union[str, PathLike, BinaryIO, IO[bytes]]): the path or file-like object
         of a checkpoint from a possibly older version of pyg.
-    kwargs: see the docstring of `torch.load` for details.
+    kwargs: see `flashmd.models.legacy_pickle.load`. Classes pickled
+        from `mlcg` are mapped to their FlashMD ports, so mlcg does not
+        need to be installed.
     """
     with fixed_pyg_inspector():
-        module = torch.load(f, **kwargs, weights_only=False)
+        module = legacy_pickle.load(f, **kwargs)
         _patch_missing_feature_flags(module)
         refresh_module_(module, SchNet)
     return module
