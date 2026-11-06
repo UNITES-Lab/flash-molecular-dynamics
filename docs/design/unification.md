@@ -68,13 +68,14 @@ P1 that confirms and fixes it, or refutes it.
 
 | Model | Finding | Status |
 |---|---|---|
-| BioEmu | Triton IPA kernels are always on and read `R` as dense; on the plain GPU path `R` is a transposed view, so samples are wrong. Protein-size baseline and production runs did not use that path. | open |
-| BioEmu | Upstream never calls `.eval()` and released configs set `dropout: 0.1`; FlashBioEmu runs in eval mode. | open |
+| BioEmu | Triton IPA kernels are always on and read `R` as dense; on the plain GPU path `R` is a transposed view (strides `[684,9,1,3]`), so samples are wrong. Protein-size baseline and production runs did not use that path. | confirmed (goldens, ubiquitin bs32): plain path Rg 275 nm against 1.34 nm; contiguous `R` restores float32 agreement. The accelerated path the paper used matches upstream eval mode to RMSD 2e-5 nm |
+| BioEmu | Upstream never calls `.eval()` and released configs set `dropout: 0.1`; FlashBioEmu and the paper's harness run in eval mode. | confirmed: same seeds, train mode differs from eval by 1.13 nm mean RMSD (first-step rotation score up to 47% of its max). Plugin default and wording in the paper to decide |
+| BioEmu | The protein-size throughput harness samples with `--steps 9` (N=10); upstream's default DPM uses N=50. At 9 steps only 3 of 32 ubiquitin samples pass upstream's C-alpha distance filter. Check how samples per second are reported; the cryptic-pocket runs used the default 49 steps. | open |
 | BioEmu | Static context cache skips the per-layer pair update of v1.2 (`extra_residue_embeds`). | open |
 | BioEmu | Accelerated path ignores the configured denoiser (steering, Heun). | open |
-| MACE | The fp64 to fp32 cast is 6.5x of the gain over the cuEq float64 baseline; a precision-matched arm is needed. | open |
-| MACE | Benchmarks used MACE-MP-0, vacuum, and a 5-bead CG structure in the all-atom model; the benchmark loop is a damped relaxation. | open |
-| MACE | Global Triton geometry hook drops the `shifts` gradient and is not double-differentiable. | open |
+| MACE | The fp64 to fp32 cast is 6.5x of the gain over the cuEq float64 baseline; a precision-matched arm is needed. | confirmed by goldens: with TF32 off, every FlashMACE switch stays within float32 round-off of stock float32 (forces 1e-5 eV/A); the whole stock-to-flash gap (6e-4 rel L2) is TF32, which also makes the flash arm non-deterministic (4e-3 eV/A run to run) |
+| MACE | Benchmarks used MACE-MP-0 medium in vacuum; the 10k headline used `2jof_5beads.pdb` in the all-atom model; 1enh, 2nuz, 2ci2 (the 18.0x system) and 1ris contain no hydrogens; the 4.6x factor IX number timed 1 step after 3; the benchmark loop is a damped relaxation with edges built once. | open |
+| MACE | Global Triton geometry hook drops the `shifts` gradient and is not double-differentiable. | not exercised by the benchmarks (no periodic cell, no stress); must be fixed or refused in the plugin |
 | MACE | `FixedOneHotFCTP` reuses primed element groups without checking composition. | open |
 | CGSchNet | Fused CFConv autograd returns `None` for `edge_weight`; the cutoff-envelope derivative may be missing from forces. | open |
 | CGSchNet | `--disable_optim` does not disable `torch.compile`: the scripts set `simulation.compile_model`, but `_attach_model` reads `_compile_model_flag`. The Langevin and Verlet scripts also enable TF32 matmuls unconditionally, so the CLI reference arm was not strict float32. | fixed on `unify` (property plus TF32 only with optimizations); check whether any published baseline used these scripts |
@@ -107,7 +108,8 @@ benchmarks/   protein-size scaling and per-model harnesses
 - [x] Benchmark harness moved from the server into `benchmarks/legacy`
 - [x] Locked environment with all three upstreams on the cluster
   (`tools/cluster/build_env.sh`, `requirements/cluster-cu128.lock.txt`)
-- [ ] Golden outputs from the current code on fixed inputs
+- [x] Golden outputs from the current code on fixed inputs
+  (`tools/goldens/`, outputs under `unify-work/goldens/` on the cluster; CGSchNet from `tools/gates`)
 - [x] Public package loads the published CGSchNet checkpoint without mlcg
   (`ExpNormalBasis` port, class remap, CPU parity with upstream mlcg)
 
