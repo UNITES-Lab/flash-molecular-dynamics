@@ -1,3 +1,4 @@
+# ruff: noqa: I001  Import order matters here: cli imports the integrators.
 from .langevin import LangevinSimulation, OverdampedSimulation
 from .parallel_tempering import PTSimulation
 from .velocity_verlet import NVESimulation

@@ -1,21 +1,19 @@
 from __future__ import annotations
 
 from math import pi
+from typing import Dict, Final
+
 from scipy.integrate import trapezoid
 from scipy.optimize import curve_fit
 import torch
 from torch_geometric.utils import scatter
-from typing import Final, Dict
 
-from .base import _Prior
 from ..data.atomic_data import AtomicData
-from ..geometry.internal_coordinates import (
-    compute_distances,
-    compute_angles_cos,
-    compute_angles_raw,
-    compute_torsions,
-)
-
+from ..geometry.internal_coordinates import compute_angles_cos
+from ..geometry.internal_coordinates import compute_angles_raw
+from ..geometry.internal_coordinates import compute_distances
+from ..geometry.internal_coordinates import compute_torsions
+from .base import _Prior
 
 torch_pi = torch.tensor(pi)
 
@@ -113,7 +111,7 @@ class Harmonic(_Prior):
         features = self.data2features(data).flatten()
         y = Harmonic.compute(features, **params)
         # Use data.ptr to avoid GPU-CPU sync in scatter
-        num_graphs = data.ptr.numel() - 1 if hasattr(data, 'ptr') else None
+        num_graphs = data.ptr.numel() - 1 if hasattr(data, "ptr") else None
         y = scatter(y, mapping_batch, dim=0, reduce="sum", dim_size=num_graphs)
         data.out[self.name] = {"energy": y}
         return data
@@ -167,7 +165,7 @@ class Harmonic(_Prior):
             )
             stat = {"k": popt[1], "x_0": popt[0]}
         except:
-            print(f"failed to fit potential estimate for Harmonic")
+            print("failed to fit potential estimate for Harmonic")
             stat = {
                 "k": torch.tensor(float("nan")),
                 "x_0": torch.tensor(float("nan")),
@@ -273,7 +271,7 @@ class HarmonicAnglesRaw(Harmonic):
         \theta_{ijk} = &\text{atan2}(\Vert \hat{\mathbf{n}} \vert, \mathbf{r}_{ij} \cdot \mathbf{r}_{kj} ) \\
         \mathbf{r}_{ij} &= \mathbf{r}_i - \mathbf{r}_j \\
         \mathbf{r}_{kj} &= \mathbf{r}_k - \mathbf{r}_j \\
-        \mathbf{\hat{n}} &= \frac{\mathbf{r}_{ij} \times \mathbf{r}_{kj}}{\Vert \mathbf{r}_{ij} \times \mathbf{r}_{kj} \Vert} 
+        \mathbf{\hat{n}} &= \frac{\mathbf{r}_{ij} \times \mathbf{r}_{kj}}{\Vert \mathbf{r}_{ij} \times \mathbf{r}_{kj} \Vert}
 
     """
 
@@ -398,7 +396,7 @@ class ShiftedPeriodicHarmonicImpropers(Harmonic):
 
         y = Harmonic.compute(features, **params)
         # Use data.ptr to avoid GPU-CPU sync in scatter
-        num_graphs = data.ptr.numel() - 1 if hasattr(data, 'ptr') else None
+        num_graphs = data.ptr.numel() - 1 if hasattr(data, "ptr") else None
         y = scatter(y, mapping_batch, dim=0, reduce="sum", dim_size=num_graphs)
         data.out[self.name] = {"energy": y}
         return data

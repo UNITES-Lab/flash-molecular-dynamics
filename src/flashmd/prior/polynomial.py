@@ -1,13 +1,11 @@
+from typing import Dict, Optional
+
 import torch
 from torch_geometric.utils import scatter
-from typing import Optional, Dict
 
-
-from .base import _Prior
 from ..data.atomic_data import AtomicData
-from ..geometry.internal_coordinates import (
-    compute_angles_cos,
-)
+from ..geometry.internal_coordinates import compute_angles_cos
+from .base import _Prior
 
 
 class Polynomial(_Prior):
@@ -63,12 +61,12 @@ class Polynomial(_Prior):
         unique_degs = torch.unique(
             torch.tensor([len(val["ks"]) for _, val in statistics.items()])
         )
-        assert (
-            len(unique_degs) == 1
-        ), "ks in the statistics dictionary must be of the same size for all the keys"
-        assert (
-            unique_degs[0] == n_degs
-        ), f"length of parameters {unique_degs[0]} doesn't match degrees {n_degs}"
+        assert len(unique_degs) == 1, (
+            "ks in the statistics dictionary must be of the same size for all the keys"
+        )
+        assert unique_degs[0] == n_degs, (
+            f"length of parameters {unique_degs[0]} doesn't match degrees {n_degs}"
+        )
 
         self.n_degs = n_degs
         self.k_names = ["k_" + str(ii) for ii in range(1, self.n_degs + 1)]
@@ -127,7 +125,7 @@ class Polynomial(_Prior):
             V0s,
         )
         # Use data.ptr to avoid GPU-CPU sync in scatter
-        num_graphs = data.ptr.numel() - 1 if hasattr(data, 'ptr') else None
+        num_graphs = data.ptr.numel() - 1 if hasattr(data, "ptr") else None
         y = scatter(y, mapping_batch, dim=0, reduce="sum", dim_size=num_graphs)
         data.out[self.name] = {"energy": y}
         return data

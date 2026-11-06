@@ -9,40 +9,46 @@
 # 6. fused_tanh_linear - fuses tanh + linear for InteractionBlock (tanh first, then matmul)
 # 7. CSR kernels - CSR-based segment reduce for atomic-free scatter-add
 
+from .cfconv_kernels import fused_cutoff_gather_multiply_scatter
+from .cfconv_kernels import fused_cutoff_gather_multiply_scatter_autograd
 from .cfconv_kernels import (
     # Cutoff + gather + multiply + scatter fusion
     fused_cutoff_gather_multiply_scatter_kernel,
-    fused_cutoff_gather_multiply_scatter,
-    fused_cutoff_gather_multiply_scatter_autograd,
-    # Linear + tanh fusion for filter network (FP32)
-    fused_linear_tanh_kernel,
-    fused_linear_tanh,
-    fused_linear_tanh_autograd,
-    # FP16 kernels for GPTQ W16A16
-    fused_linear_tanh_fp16_kernel,
-    fused_linear_tanh_fp16,
-    fused_linear_tanh_fp16_autograd,
-    linear_fp16_kernel,
-    linear_fp16,
-    linear_fp16_autograd,
+)
+from .cfconv_kernels import fused_distance_gaussian_rbf_cutoff
+from .cfconv_kernels import fused_distance_gaussian_rbf_cutoff_autograd
+from .cfconv_kernels import (
     # Distance + Gaussian RBF + cutoff fusion
     fused_distance_gaussian_rbf_cutoff_kernel,
-    fused_distance_gaussian_rbf_cutoff,
-    fused_distance_gaussian_rbf_cutoff_autograd,
+)
+from .cfconv_kernels import fused_linear_tanh
+from .cfconv_kernels import fused_linear_tanh_autograd
+from .cfconv_kernels import fused_linear_tanh_fp16
+from .cfconv_kernels import fused_linear_tanh_fp16_autograd
+from .cfconv_kernels import (
+    # FP16 kernels for GPTQ W16A16
+    fused_linear_tanh_fp16_kernel,
+)
+from .cfconv_kernels import (
+    # Linear + tanh fusion for filter network (FP32)
+    fused_linear_tanh_kernel,
+)
+from .cfconv_kernels import fused_tanh_linear
+from .cfconv_kernels import fused_tanh_linear_autograd
+from .cfconv_kernels import (
     # Tanh + linear fusion for InteractionBlock (tanh first, then matmul)
     fused_tanh_linear_kernel,
-    fused_tanh_linear,
-    fused_tanh_linear_autograd,
 )
+from .cfconv_kernels import linear_fp16
+from .cfconv_kernels import linear_fp16_autograd
+from .cfconv_kernels import linear_fp16_kernel
 
 # CSR kernels for segment reduce
-from .csr_kernels import (
-    build_csr_index,
-    build_src_csr_index,
-    fused_csr_cfconv,
-    fused_csr_cfconv_autograd,
-    fused_src_csr_grad_x,
-)
+from .csr_kernels import build_csr_index
+from .csr_kernels import build_src_csr_index
+from .csr_kernels import fused_csr_cfconv
+from .csr_kernels import fused_csr_cfconv_autograd
+from .csr_kernels import fused_src_csr_grad_x
 
 __all__ = [
     "fused_cutoff_gather_multiply_scatter_kernel",

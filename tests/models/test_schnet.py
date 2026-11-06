@@ -1,15 +1,18 @@
-import torch
-from torch_geometric.data.collate import collate
-import pytest
 from typing import List
 import warnings
 
-from flashmd.models.schnet import StandardSchNet
-from flashmd.models.radial_basis import GaussianBasis
-from flashmd.models.gradients import GradientsOut
-from flashmd.models.cutoff import IdentityCutoff, CosineCutoff
+import pytest
+import torch
+from torch_geometric.data.collate import collate
+
+from flashmd.data._keys import ENERGY_KEY
+from flashmd.data._keys import FORCE_KEY
 from flashmd.data.atomic_data import AtomicData
-from flashmd.data._keys import ENERGY_KEY, FORCE_KEY
+from flashmd.models.cutoff import CosineCutoff
+from flashmd.models.cutoff import IdentityCutoff
+from flashmd.models.gradients import GradientsOut
+from flashmd.models.radial_basis import GaussianBasis
+from flashmd.models.schnet import StandardSchNet
 from flashmd.neighbor_list.neighbor_list import make_neighbor_list
 
 

@@ -5,8 +5,8 @@ This is a seperate module to compensate for a TorchScript bug that can only reco
 Adapted from NequIP (https://github.com/mir-group/nequip)
 """
 
-from typing import List, Final
 import sys
+from typing import Final, List
 
 # == Define allowed keys as constants ==
 #: The positions of the atoms in the system

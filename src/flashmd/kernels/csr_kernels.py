@@ -21,7 +21,6 @@ import torch
 import triton
 import triton.language as tl
 
-
 # ============================================================================
 # CSR Build Kernels
 # ============================================================================
@@ -133,7 +132,11 @@ def build_csr_index(
         dst_ptr = torch.zeros(num_nodes + 1, dtype=torch.int64, device=device)
         csr_perm = torch.empty(0, dtype=torch.int64, device=device)
         if edge_src is not None:
-            return dst_ptr, csr_perm, torch.empty(0, dtype=torch.int64, device=device)
+            return (
+                dst_ptr,
+                csr_perm,
+                torch.empty(0, dtype=torch.int64, device=device),
+            )
         return dst_ptr, csr_perm
 
     # Step 1: Histogram - count edges per destination
@@ -143,7 +146,9 @@ def build_csr_index(
     grid = ((num_edges + BLOCK_SIZE - 1) // BLOCK_SIZE,)
 
     histogram_kernel[grid](
-        edge_dst, counts, num_edges,
+        edge_dst,
+        counts,
+        num_edges,
         BLOCK_SIZE=BLOCK_SIZE,
     )
 
@@ -157,7 +162,10 @@ def build_csr_index(
     csr_perm = torch.empty(num_edges, dtype=torch.int64, device=device)
 
     csr_fill_kernel[grid](
-        edge_dst, cursor, csr_perm, num_edges,
+        edge_dst,
+        cursor,
+        csr_perm,
+        num_edges,
         BLOCK_SIZE=BLOCK_SIZE,
     )
 
@@ -274,7 +282,9 @@ def build_src_csr_index(
     grid = ((num_edges + BLOCK_SIZE - 1) // BLOCK_SIZE,)
 
     src_histogram_kernel[grid](
-        edge_src, counts, num_edges,
+        edge_src,
+        counts,
+        num_edges,
         BLOCK_SIZE=BLOCK_SIZE,
     )
 
@@ -287,7 +297,10 @@ def build_src_csr_index(
     src_perm = torch.empty(num_edges, dtype=torch.int64, device=device)
 
     src_csr_fill_kernel[grid](
-        edge_src, cursor, src_perm, num_edges,
+        edge_src,
+        cursor,
+        src_perm,
+        num_edges,
         BLOCK_SIZE=BLOCK_SIZE,
     )
 
@@ -302,14 +315,14 @@ def build_src_csr_index(
 @triton.jit
 def fused_src_csr_grad_x_kernel(
     # Input pointers
-    grad_output_ptr,   # [num_nodes, feature_dim] - gradient from output (FP32)
-    filter_out_ptr,    # [num_edges, feature_dim] - filter outputs (FP32 or FP16)
-    edge_weight_ptr,   # [num_edges] - distances for cutoff
-    edge_dst_ptr,      # [num_edges] - destination indices (original order)
-    src_perm_ptr,      # [num_edges] - src-CSR permutation
-    src_ptr_ptr,       # [num_nodes + 1] - src-CSR row pointers
+    grad_output_ptr,  # [num_nodes, feature_dim] - gradient from output (FP32)
+    filter_out_ptr,  # [num_edges, feature_dim] - filter outputs (FP32 or FP16)
+    edge_weight_ptr,  # [num_edges] - distances for cutoff
+    edge_dst_ptr,  # [num_edges] - destination indices (original order)
+    src_perm_ptr,  # [num_edges] - src-CSR permutation
+    src_ptr_ptr,  # [num_nodes + 1] - src-CSR row pointers
     # Output pointer
-    grad_x_ptr,        # [num_nodes, feature_dim] - gradient w.r.t. x (FP32)
+    grad_x_ptr,  # [num_nodes, feature_dim] - gradient w.r.t. x (FP32)
     # Parameters
     cutoff_upper,
     num_nodes,
@@ -448,7 +461,9 @@ def fused_src_csr_grad_x(
     feature_dim = grad_output.shape[1]
 
     # Allocate output (zeros for nodes with no outgoing edges)
-    grad_x = torch.zeros(num_nodes, feature_dim, device=grad_output.device, dtype=torch.float32)
+    grad_x = torch.zeros(
+        num_nodes, feature_dim, device=grad_output.device, dtype=torch.float32
+    )
 
     num_edges = edge_dst.shape[0]
     if num_edges == 0:
@@ -490,11 +505,11 @@ def fused_src_csr_grad_x(
 @triton.jit
 def csr_segment_reduce_kernel(
     # Input pointers
-    msg_ptr,           # [num_edges, feature_dim] - messages to aggregate
-    csr_perm_ptr,      # [num_edges] - permutation to original edge indices
-    dst_ptr_ptr,       # [num_nodes + 1] - CSR row pointers
+    msg_ptr,  # [num_edges, feature_dim] - messages to aggregate
+    csr_perm_ptr,  # [num_edges] - permutation to original edge indices
+    dst_ptr_ptr,  # [num_nodes + 1] - CSR row pointers
     # Output pointer
-    output_ptr,        # [num_nodes, feature_dim]
+    output_ptr,  # [num_nodes, feature_dim]
     # Sizes
     num_nodes,
     feature_dim,
@@ -593,7 +608,9 @@ def csr_segment_reduce(
     num_edges, feature_dim = msg.shape
 
     # Allocate output
-    output = torch.zeros(num_nodes, feature_dim, device=msg.device, dtype=msg.dtype)
+    output = torch.zeros(
+        num_nodes, feature_dim, device=msg.device, dtype=msg.dtype
+    )
 
     if num_edges == 0:
         return output
@@ -625,14 +642,14 @@ def csr_segment_reduce(
 @triton.jit
 def fused_csr_cfconv_kernel(
     # Input pointers
-    x_ptr,             # [num_nodes, feature_dim] - node features
-    filter_out_ptr,    # [num_edges, feature_dim] - filter outputs (original order, FP32 or FP16)
-    edge_weight_ptr,   # [num_edges] - distances (original order)
-    edge_src_ptr,      # [num_edges] - source indices (original order)
-    csr_perm_ptr,      # [num_edges] - CSR permutation
-    dst_ptr_ptr,       # [num_nodes + 1] - CSR row pointers
+    x_ptr,  # [num_nodes, feature_dim] - node features
+    filter_out_ptr,  # [num_edges, feature_dim] - filter outputs (original order, FP32 or FP16)
+    edge_weight_ptr,  # [num_edges] - distances (original order)
+    edge_src_ptr,  # [num_edges] - source indices (original order)
+    csr_perm_ptr,  # [num_edges] - CSR permutation
+    dst_ptr_ptr,  # [num_nodes + 1] - CSR row pointers
     # Output pointer
-    output_ptr,        # [num_nodes, feature_dim]
+    output_ptr,  # [num_nodes, feature_dim]
     # Parameters
     cutoff_upper,
     num_nodes,
@@ -843,21 +860,43 @@ class FusedCSRCFConvFunction(torch.autograd.Function):
     ):
         # Save for backward
         ctx.save_for_backward(
-            x, filter_out, edge_weight, edge_src, edge_dst, dst_ptr, csr_perm, src_ptr, src_perm
+            x,
+            filter_out,
+            edge_weight,
+            edge_src,
+            edge_dst,
+            dst_ptr,
+            csr_perm,
+            src_ptr,
+            src_perm,
         )
         ctx.num_nodes = num_nodes
         ctx.cutoff_upper = cutoff_upper
         ctx.filter_out_dtype = filter_out.dtype  # Save dtype for backward
 
         return fused_csr_cfconv(
-            x, filter_out, edge_weight, edge_src,
-            dst_ptr, csr_perm, num_nodes, cutoff_upper
+            x,
+            filter_out,
+            edge_weight,
+            edge_src,
+            dst_ptr,
+            csr_perm,
+            num_nodes,
+            cutoff_upper,
         )
 
     @staticmethod
     def backward(ctx, grad_output):
         (
-            x, filter_out, edge_weight, edge_src, edge_dst, dst_ptr, csr_perm, src_ptr, src_perm
+            x,
+            filter_out,
+            edge_weight,
+            edge_src,
+            edge_dst,
+            dst_ptr,
+            csr_perm,
+            src_ptr,
+            src_perm,
         ) = ctx.saved_tensors
         num_nodes = ctx.num_nodes
         cutoff_upper = ctx.cutoff_upper
@@ -884,7 +923,10 @@ class FusedCSRCFConvFunction(torch.autograd.Function):
                 )
             else:
                 # === Atomic scatter path (fallback) ===
-                from flashmd.kernels.cfconv_kernels import fused_cutoff_gather_multiply_scatter
+                from flashmd.kernels.cfconv_kernels import (
+                    fused_cutoff_gather_multiply_scatter,
+                )
+
                 grad_x = fused_cutoff_gather_multiply_scatter(
                     grad_output,
                     filter_out,
@@ -899,6 +941,7 @@ class FusedCSRCFConvFunction(torch.autograd.Function):
             # grad_filter_out[e] = x[src[e]] * grad_output[dst[e]] * C[e]
             # Output dtype matches filter_out dtype (FP32 or FP16)
             from flashmd.kernels.cfconv_kernels import fused_grad_filter_out
+
             grad_filter_out = fused_grad_filter_out(
                 x,
                 grad_output,
@@ -909,7 +952,19 @@ class FusedCSRCFConvFunction(torch.autograd.Function):
                 out_dtype=filter_out_dtype,
             )
 
-        return grad_x, grad_filter_out, None, None, None, None, None, None, None, None, None
+        return (
+            grad_x,
+            grad_filter_out,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
 
 
 def fused_csr_cfconv_autograd(
@@ -939,6 +994,15 @@ def fused_csr_cfconv_autograd(
         Src-CSR permutation [num_edges]. Required with src_ptr.
     """
     return FusedCSRCFConvFunction.apply(
-        x, filter_out, edge_weight, edge_src, edge_dst,
-        dst_ptr, csr_perm, num_nodes, cutoff_upper, src_ptr, src_perm
+        x,
+        filter_out,
+        edge_weight,
+        edge_src,
+        edge_dst,
+        dst_ptr,
+        csr_perm,
+        num_nodes,
+        cutoff_upper,
+        src_ptr,
+        src_perm,
     )

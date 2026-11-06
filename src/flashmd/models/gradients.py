@@ -1,8 +1,10 @@
-import torch
+from typing import Any, List, Sequence
+
 import nvtx
-from typing import Sequence, Any, List
-from ..data.atomic_data import AtomicData
+import torch
+
 from ..data._keys import *
+from ..data.atomic_data import AtomicData
 
 
 def _log_shape(logger, label: str, tensor, indent: int = 0):
@@ -11,7 +13,9 @@ def _log_shape(logger, label: str, tensor, indent: int = 0):
         return
     prefix = "  " * indent
     if isinstance(tensor, torch.Tensor):
-        logger.write(f"{prefix}{label}: shape={list(tensor.shape)}, dtype={tensor.dtype}\n")
+        logger.write(
+            f"{prefix}{label}: shape={list(tensor.shape)}, dtype={tensor.dtype}\n"
+        )
     else:
         logger.write(f"{prefix}{label}: {type(tensor).__name__}\n")
 
@@ -121,7 +125,7 @@ class SumOut(torch.nn.Module):
             )
 
         """
-        logger = getattr(data, '_shape_logger', None)
+        logger = getattr(data, "_shape_logger", None)
         if logger:
             logger.write("    [SumOut.forward] Aggregating model outputs:\n")
             logger.write(f"      Models: {list(self.models.keys())}\n")
@@ -141,7 +145,9 @@ class SumOut(torch.nn.Module):
                 logger.write(f"      [{name}] output:\n")
                 for target in self.targets:
                     if name in data.out and target in data.out[name]:
-                        _log_shape(logger, f"        {target}", data.out[name][target])
+                        _log_shape(
+                            logger, f"        {target}", data.out[name][target]
+                        )
 
         # Log final aggregated output
         if logger:
@@ -219,9 +225,9 @@ class GradientsOut(torch.nn.Module):
             self.targets = [targets]
         elif isinstance(targets, Sequence):
             self.targets = targets
-        assert any(
-            [k in GradientsOut._targets for k in self.targets]
-        ), f"targets={self.targets} should be any of {GradientsOut._targets}"
+        assert any([k in GradientsOut._targets for k in self.targets]), (
+            f"targets={self.targets} should be any of {GradientsOut._targets}"
+        )
 
     @nvtx.annotate("GradientsOut.forward", color="red")
     def forward(self, data: AtomicData) -> AtomicData:
@@ -240,9 +246,11 @@ class GradientsOut(torch.nn.Module):
             the energy as well as the target predictions produced through
             gradient operations.
         """
-        logger = getattr(data, '_shape_logger', None)
+        logger = getattr(data, "_shape_logger", None)
         if logger:
-            logger.write(f"    [GradientsOut.forward] Computing gradients for {self.name}:\n")
+            logger.write(
+                f"    [GradientsOut.forward] Computing gradients for {self.name}:\n"
+            )
             _log_shape(logger, "      data.pos (input)", data.pos)
 
         with nvtx.annotate("GradientsOut_enable_grad", color="gray"):
@@ -261,7 +269,9 @@ class GradientsOut(torch.nn.Module):
             if logger:
                 _log_shape(logger, "      energy (for autograd)", y)
 
-            with nvtx.annotate("GradientsOut_autograd_backward", color="orange"):
+            with nvtx.annotate(
+                "GradientsOut_autograd_backward", color="orange"
+            ):
                 dy_dr = torch.autograd.grad(
                     y.sum(),
                     data.pos,

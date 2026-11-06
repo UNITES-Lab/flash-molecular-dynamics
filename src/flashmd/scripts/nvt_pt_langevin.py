@@ -16,16 +16,14 @@ if _DISABLE_OPTIM:
     ]:
         os.environ[var] = "0"
 
-from time import ctime
 import os.path as osp
-import torch
+from time import ctime
 from typing import Any, Dict
 
+import torch
 
-from flashmd.simulation import (
-    parse_simulation_config,
-    PTSimulation,
-)
+from flashmd.simulation import PTSimulation
+from flashmd.simulation import parse_simulation_config
 
 
 def main():

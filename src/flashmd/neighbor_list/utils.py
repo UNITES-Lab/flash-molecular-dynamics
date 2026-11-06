@@ -1,5 +1,5 @@
-import torch
 from ase.atoms import Atoms
+import torch
 from torch_geometric.data import Data
 
 

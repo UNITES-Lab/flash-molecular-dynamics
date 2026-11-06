@@ -1,21 +1,21 @@
-import torch
-from typing import List, Type, Tuple
-from copy import deepcopy
 from collections import defaultdict
+from copy import deepcopy
+from typing import List, Tuple, Type
 
-from ..models import GradientsOut, SumOut
+import torch
+
+from ..data import AtomicData
+from ..models import GradientsOut
+from ..models import SumOut
 from ..models.utils import desparsify_prior_module
 from ..neighbor_list.neighbor_list import make_neighbor_list
-from ..data import AtomicData
-from ..prior import (
-    _Prior,
-    Dihedral,
-    GeneralAngles,
-    GeneralBonds,
-    HarmonicBonds,
-    HarmonicAngles,
-    HarmonicImpropers,
-)
+from ..prior import Dihedral
+from ..prior import GeneralAngles
+from ..prior import GeneralBonds
+from ..prior import HarmonicAngles
+from ..prior import HarmonicBonds
+from ..prior import HarmonicImpropers
+from ..prior import _Prior
 
 """It is convinient to define various prior models for many types of
 interactions which leads to a large number of priors. While this is convinient

@@ -1,5 +1,8 @@
 import numpy as np
-from .base import JPERKCAL, KBOLTZMANN, AVOGADRO
+
+from .base import AVOGADRO
+from .base import JPERKCAL
+from .base import KBOLTZMANN
 
 
 def calc_beta_from_temperature(temp):

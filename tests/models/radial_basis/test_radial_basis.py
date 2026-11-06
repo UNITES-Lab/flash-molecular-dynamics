@@ -1,7 +1,8 @@
-import torch
 import pytest
-from flashmd.models.radial_basis import GaussianBasis
+import torch
+
 from flashmd.models.cutoff import IdentityCutoff
+from flashmd.models.radial_basis import GaussianBasis
 
 
 def test_cutoff_error_raise():

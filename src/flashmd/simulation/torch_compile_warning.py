@@ -11,7 +11,7 @@ def torch_compile_waring(e):
 !!! DANGER WARNING: torch.compile FALLBACK ACTIVATED !!!
 ============================================================{RESET}
 
-{YELLOW}torch.compile failed with error: 
+{YELLOW}torch.compile failed with error:
 -----------------------------------------------------------{RESET}
 {e}
 {YELLOW}

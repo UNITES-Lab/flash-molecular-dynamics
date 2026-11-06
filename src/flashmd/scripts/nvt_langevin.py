@@ -17,19 +17,17 @@ if _DISABLE_OPTIM:
         os.environ[var] = "0"
 
 import time
-import torch
-from torch.profiler import (
-    profile,
-    ProfilerActivity,
-    schedule,
-    tensorboard_trace_handler,
-)
 
-from flashmd.simulation import (
-    parse_simulation_config,
-    LangevinSimulation,
-)
-from flashmd.simulation.logging import logger, setup_simulation_logging
+import torch
+from torch.profiler import ProfilerActivity
+from torch.profiler import profile
+from torch.profiler import schedule
+from torch.profiler import tensorboard_trace_handler
+
+from flashmd.simulation import LangevinSimulation
+from flashmd.simulation import parse_simulation_config
+from flashmd.simulation.logging import logger
+from flashmd.simulation.logging import setup_simulation_logging
 
 
 def main():
@@ -139,8 +137,12 @@ def main():
 
     # Get peak memory usage (total, for backwards compatibility)
     if torch.cuda.is_available():
-        total_max_memory_allocated = torch.cuda.max_memory_allocated() / (1024**3)  # GB
-        total_max_memory_reserved = torch.cuda.max_memory_reserved() / (1024**3)  # GB
+        total_max_memory_allocated = torch.cuda.max_memory_allocated() / (
+            1024**3
+        )  # GB
+        total_max_memory_reserved = torch.cuda.max_memory_reserved() / (
+            1024**3
+        )  # GB
     else:
         total_max_memory_allocated = 0
         total_max_memory_reserved = 0
@@ -149,7 +151,9 @@ def main():
     logger.info("Throughput Metrics (Second Half)")
     logger.info("-" * 50)
     logger.info(f"Total wall time: {elapsed_time:.2f} s")
-    logger.info(f"Timesteps: {n_timesteps}, Molecules: {n_sims}, Atoms/mol: {n_atoms}")
+    logger.info(
+        f"Timesteps: {n_timesteps}, Molecules: {n_sims}, Atoms/mol: {n_atoms}"
+    )
 
     if throughput_metrics:
         first_half = throughput_metrics["first_half_steps"]
@@ -160,19 +164,31 @@ def main():
         peak_mem_alloc = throughput_metrics.get("peak_memory_allocated_gb", 0)
         peak_mem_reserved = throughput_metrics.get("peak_memory_reserved_gb", 0)
 
-        logger.info(f"Measured: second half ({second_half_steps} steps) in {second_half_time:.2f} s")
+        logger.info(
+            f"Measured: second half ({second_half_steps} steps) in {second_half_time:.2f} s"
+        )
         logger.info(f"Throughput: {throughput:.2f} (timesteps*molecules)/sec")
         logger.info(f"ms/timestep: {ms_per_timestep:.3f}")
-        logger.info(f"Peak memory allocated (2nd half): {peak_mem_alloc:.2f} GB")
-        logger.info(f"Peak memory reserved (2nd half): {peak_mem_reserved:.2f} GB")
+        logger.info(
+            f"Peak memory allocated (2nd half): {peak_mem_alloc:.2f} GB"
+        )
+        logger.info(
+            f"Peak memory reserved (2nd half): {peak_mem_reserved:.2f} GB"
+        )
     else:
         # Fallback to total throughput if metrics unavailable
         throughput = (n_timesteps * n_sims) / elapsed_time
         ms_per_timestep = (elapsed_time / n_timesteps) * 1000
-        logger.info(f"Throughput (total): {throughput:.2f} (timesteps*molecules)/sec")
+        logger.info(
+            f"Throughput (total): {throughput:.2f} (timesteps*molecules)/sec"
+        )
         logger.info(f"ms/timestep (total): {ms_per_timestep:.3f}")
-        logger.info(f"Peak memory allocated (total): {total_max_memory_allocated:.2f} GB")
-        logger.info(f"Peak memory reserved (total): {total_max_memory_reserved:.2f} GB")
+        logger.info(
+            f"Peak memory allocated (total): {total_max_memory_allocated:.2f} GB"
+        )
+        logger.info(
+            f"Peak memory reserved (total): {total_max_memory_reserved:.2f} GB"
+        )
 
     logger.info("=" * 50)
 

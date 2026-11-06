@@ -2,35 +2,30 @@
 # Authors: Brooke Husic, Nick Charron, Jiang Wang
 # Contributors: Dominik Lemm, Andreas Kraemer, Clark Templeton, Iryna Zaporozhets
 
+from copy import deepcopy
 import logging
-import warnings
-from typing import List, Optional, Tuple, Union, Callable
-import torch
-import nvtx
-import numpy as np
-from torch_geometric.data.collate import collate
 import os
 import time
-from copy import deepcopy
+from typing import Callable, List, Optional, Tuple, Union
+import warnings
+
 from jsonargparse.typing import Path_fr
+import numpy as np
+import nvtx
+import torch
+from torch_geometric.data.collate import collate
 
-from .logging import logger
-from ..utils import tqdm
-
+from ..data._keys import ENERGY_KEY
+from ..data._keys import FORCE_KEY
+from ..data._keys import MASS_KEY
+from ..data._keys import POSITIONS_KEY
+from ..data._keys import VELOCITY_KEY
 from ..data.atomic_data import AtomicData
-from ..data._keys import (
-    ENERGY_KEY,
-    FORCE_KEY,
-    MASS_KEY,
-    VELOCITY_KEY,
-    POSITIONS_KEY,
-)
+from ..utils import tqdm
+from .logging import logger
 from .specialize_prior import condense_all_priors_for_simulation
-from .torch_compile_warning import (
-    torch_compile_waring,
-    force_torch_compile_warning,
-)
-
+from .torch_compile_warning import force_torch_compile_warning
+from .torch_compile_warning import torch_compile_waring
 
 # Physical Constants
 KBOLTZMANN = 1.38064852e-23  # Boltzmann's constant in Joules/Kelvin
@@ -326,7 +321,9 @@ class _Simulation(object):
             model, configurations = condense_all_priors_for_simulation(
                 model, configurations
             )
-            logger.info("Prior models have been specialized for the simulation.")
+            logger.info(
+                "Prior models have been specialized for the simulation."
+            )
         if self.filename is not None:
             torch.save(
                 (deepcopy(model), deepcopy(configurations)),
@@ -362,20 +359,20 @@ class _Simulation(object):
         if self._compile_model_flag:
             # Use dynamic=True because edge count varies during simulation
             # Use mode="default" since "reduce-overhead" (CUDA graphs) requires static shapes
-            logger.info("Applying torch.compile to model (mode='default', dynamic=True)...")
-            self.model = torch.compile(
-                self.model, mode="default", dynamic=True
+            logger.info(
+                "Applying torch.compile to model (mode='default', dynamic=True)..."
             )
+            self.model = torch.compile(self.model, mode="default", dynamic=True)
             logger.info("torch.compile applied successfully")
-
 
     def _patch_legacy_model(self):
         """Patch legacy models that are missing new attributes."""
         try:
             from ..models.schnet import InteractionBlock
+
             for module in self.model.modules():
                 if isinstance(module, InteractionBlock):
-                    if not hasattr(module, 'use_fused_tanh_linear'):
+                    if not hasattr(module, "use_fused_tanh_linear"):
                         module.use_fused_tanh_linear = False
         except ImportError:
             pass  # SchNet not available, skip
@@ -383,14 +380,17 @@ class _Simulation(object):
     def _apply_gptq_quantization(self):
         """Apply GPTQ quantization to the model's filter networks."""
         if self.gptq == "w16a16":
-            from ..models.gptq import apply_gptq_w16a16_to_model, validate_gptq_w16a16
+            from ..models.gptq import apply_gptq_w16a16_to_model
+            from ..models.gptq import validate_gptq_w16a16
 
-            logger.info(f"[GPTQ] Applying W16A16 quantization to filter networks...")
+            logger.info(
+                "[GPTQ] Applying W16A16 quantization to filter networks..."
+            )
             self.model = apply_gptq_w16a16_to_model(self.model)
 
             # Validate that quantization was applied correctly (no fallback!)
             validate_gptq_w16a16(self.model)
-            logger.info(f"[GPTQ] W16A16 quantization applied successfully")
+            logger.info("[GPTQ] W16A16 quantization applied successfully")
 
             # Warm up Triton kernels (autotuning takes ~10s on first call)
             self._warmup_gptq_kernels()
@@ -398,10 +398,14 @@ class _Simulation(object):
     def _warmup_gptq_kernels(self):
         """Warm up Triton kernels to trigger autotuning before simulation."""
         import torch
-        logger.info(f"[GPTQ] Warming up Triton kernels (this may take ~10 seconds)...")
+
+        logger.info(
+            "[GPTQ] Warming up Triton kernels (this may take ~10 seconds)..."
+        )
 
         # Find a GPTQ filter network to warm up
         from ..models.gptq import GPTQW16A16FilterNetwork
+
         gptq_filter = None
         for module in self.model.modules():
             if isinstance(module, GPTQW16A16FilterNetwork):
@@ -419,7 +423,9 @@ class _Simulation(object):
 
         # Warmup with a few different M values to cover autotuning
         for M in [100_000, 500_000, 900_000]:
-            x = torch.randn(M, K, device=device, dtype=torch.float32, requires_grad=True)
+            x = torch.randn(
+                M, K, device=device, dtype=torch.float32, requires_grad=True
+            )
             try:
                 y = gptq_filter(x)
                 # Also trigger backward (for force computation)
@@ -428,7 +434,7 @@ class _Simulation(object):
                 logger.warning(f"[GPTQ] Warmup failed for M={M}: {e}")
 
         torch.cuda.synchronize()
-        logger.info(f"[GPTQ] Triton kernel warmup complete")
+        logger.info("[GPTQ] Triton kernel warmup complete")
 
     def _attach_configurations(
         self,
@@ -558,7 +564,10 @@ class _Simulation(object):
                 total=self.n_timesteps,
             ):
                 # Start CUDA profiler at specified step
-                if self.profile_start_step is not None and t == self.profile_start_step:
+                if (
+                    self.profile_start_step is not None
+                    and t == self.profile_start_step
+                ):
                     torch.cuda.cudart().cudaProfilerStart()
 
                 # Record time at halfway point for throughput measurement (second half only)
@@ -572,10 +581,14 @@ class _Simulation(object):
 
                 with nvtx.annotate(f"timestep_{t}", color="cyan"):
                     # Log timestep header for shape logging
-                    if self.print_shape and self._shape_log_file and self._shape_log_step_count <= self.print_shape_steps:
-                        self._shape_log_file.write(f"\n{'='*80}\n")
+                    if (
+                        self.print_shape
+                        and self._shape_log_file
+                        and self._shape_log_step_count <= self.print_shape_steps
+                    ):
+                        self._shape_log_file.write(f"\n{'=' * 80}\n")
                         self._shape_log_file.write(f"TIMESTEP {t}\n")
-                        self._shape_log_file.write(f"{'='*80}\n")
+                        self._shape_log_file.write(f"{'=' * 80}\n")
 
                     # step forward in time
                     with nvtx.annotate("integrator_timestep", color="green"):
@@ -596,7 +609,9 @@ class _Simulation(object):
                         # it only happens when time points are also recorded
                         if self.export_interval is not None:
                             if (t + 1) % self.export_interval == 0:
-                                with nvtx.annotate("write_to_disk", color="magenta"):
+                                with nvtx.annotate(
+                                    "write_to_disk", color="magenta"
+                                ):
                                     self.write()
                                 if self.save_subroutine is not None:
                                     self.save_subroutine(
@@ -611,7 +626,9 @@ class _Simulation(object):
 
                     if self.sim_subroutine != None:
                         if (t + 1) % self.sim_subroutine_interval == 0:
-                            with nvtx.annotate("sim_subroutine", color="yellow"):
+                            with nvtx.annotate(
+                                "sim_subroutine", color="yellow"
+                            ):
                                 data = self.sim_subroutine(data)
 
                     # Store final potential for summary (keep on GPU to avoid sync every step)
@@ -626,13 +643,18 @@ class _Simulation(object):
                     if self.print_shape and self._shape_log_file:
                         self._shape_log_step_count += 1
                         if self._shape_log_step_count == self.print_shape_steps:
-                            self._shape_log_file.write(f"\n{'='*80}\n")
-                            self._shape_log_file.write(f"Shape logging stopped after {self.print_shape_steps} timesteps.\n")
-                            self._shape_log_file.write(f"{'='*80}\n")
+                            self._shape_log_file.write(f"\n{'=' * 80}\n")
+                            self._shape_log_file.write(
+                                f"Shape logging stopped after {self.print_shape_steps} timesteps.\n"
+                            )
+                            self._shape_log_file.write(f"{'=' * 80}\n")
                             self._shape_log_file.flush()
 
                 # Stop CUDA profiler at specified step
-                if self.profile_end_step is not None and t == self.profile_end_step:
+                if (
+                    self.profile_end_step is not None
+                    and t == self.profile_end_step
+                ):
                     torch.cuda.cudart().cudaProfilerStop()
 
         # Record end time and peak memory for throughput measurement
@@ -642,8 +664,12 @@ class _Simulation(object):
         self._post_warmup_steps = self.n_timesteps - halfway_step
         # Record peak memory for second half (after reset at halfway)
         if torch.cuda.is_available():
-            self._second_half_peak_memory_allocated = torch.cuda.max_memory_allocated() / (1024**3)  # GB
-            self._second_half_peak_memory_reserved = torch.cuda.max_memory_reserved() / (1024**3)  # GB
+            self._second_half_peak_memory_allocated = (
+                torch.cuda.max_memory_allocated() / (1024**3)
+            )  # GB
+            self._second_half_peak_memory_reserved = (
+                torch.cuda.max_memory_reserved() / (1024**3)
+            )  # GB
         else:
             self._second_half_peak_memory_allocated = 0
             self._second_half_peak_memory_reserved = 0
@@ -663,16 +689,24 @@ class _Simulation(object):
 
         # Close shape log file
         if self.print_shape and self._shape_log_file:
-            self._shape_log_file.write(f"\nSimulation completed. Total timesteps: {self.n_timesteps}\n")
+            self._shape_log_file.write(
+                f"\nSimulation completed. Total timesteps: {self.n_timesteps}\n"
+            )
             self._shape_log_file.close()
             self._shape_log_file = None
 
         # Save neighbor list dump to .pt file
-        if self.dump_neighbor_list and self._neighbor_list_dump and self.filename is not None:
+        if (
+            self.dump_neighbor_list
+            and self._neighbor_list_dump
+            and self.filename is not None
+        ):
             nl_dump_path = f"{self.filename}_neighbor_list.pt"
             torch.save(self._neighbor_list_dump, nl_dump_path)
             logger.info(f"Neighbor list saved to: {nl_dump_path}")
-            logger.info(f"  Total timesteps saved: {len(self._neighbor_list_dump)}")
+            logger.info(
+                f"  Total timesteps saved: {len(self._neighbor_list_dump)}"
+            )
 
         return
 
@@ -771,8 +805,12 @@ class _Simulation(object):
             ms_per_step = 0
 
         # Get second-half memory stats
-        peak_memory_allocated = getattr(self, '_second_half_peak_memory_allocated', 0)
-        peak_memory_reserved = getattr(self, '_second_half_peak_memory_reserved', 0)
+        peak_memory_allocated = getattr(
+            self, "_second_half_peak_memory_allocated", 0
+        )
+        peak_memory_reserved = getattr(
+            self, "_second_half_peak_memory_reserved", 0
+        )
 
         return {
             "second_half_elapsed_time": second_half_time,
@@ -795,7 +833,10 @@ class _Simulation(object):
         logger.info(f"dt: {self.dt}")
 
         # Log final potential(s) - transfer to CPU here (deferred from loop for perf)
-        if hasattr(self, '_final_potential') and self._final_potential is not None:
+        if (
+            hasattr(self, "_final_potential")
+            and self._final_potential is not None
+        ):
             potential = self._final_potential.cpu().flatten()
             if potential.numel() == 1:
                 logger.info(f"Final potential: {potential.item():.6f}")
@@ -838,21 +879,37 @@ class _Simulation(object):
             vector forces predicted by the model
         """
         # Log input shapes before model forward
-        if self.print_shape and self._shape_log_step_count <= self.print_shape_steps:
-            self._shape_log_file.write("  [calculate_potential_and_forces] INPUT:\n")
+        if (
+            self.print_shape
+            and self._shape_log_step_count <= self.print_shape_steps
+        ):
+            self._shape_log_file.write(
+                "  [calculate_potential_and_forces] INPUT:\n"
+            )
             self._log_shape("    data.pos", data.pos)
             self._log_shape("    data.atom_types", data.atom_types)
             self._log_shape("    data.batch", data.batch)
-            if hasattr(data, 'ptr'):
+            if hasattr(data, "ptr"):
                 self._log_shape("    data.ptr", data.ptr)
             # Log neighbor list info
-            if hasattr(data, 'neighbor_list') and data.neighbor_list:
+            if hasattr(data, "neighbor_list") and data.neighbor_list:
                 self._shape_log_file.write("    neighbor_list:\n")
                 for nl_name, nl_data in data.neighbor_list.items():
                     if isinstance(nl_data, dict) and "index_mapping" in nl_data:
-                        self._log_shape(f"      {nl_name}.index_mapping", nl_data["index_mapping"], indent=3)
-                        if "cell_shifts" in nl_data and nl_data["cell_shifts"] is not None:
-                            self._log_shape(f"      {nl_name}.cell_shifts", nl_data["cell_shifts"], indent=3)
+                        self._log_shape(
+                            f"      {nl_name}.index_mapping",
+                            nl_data["index_mapping"],
+                            indent=3,
+                        )
+                        if (
+                            "cell_shifts" in nl_data
+                            and nl_data["cell_shifts"] is not None
+                        ):
+                            self._log_shape(
+                                f"      {nl_name}.cell_shifts",
+                                nl_data["cell_shifts"],
+                                indent=3,
+                            )
             # Pass shape logger to model via data object
             data._shape_logger = self._shape_log_file
 
@@ -864,13 +921,13 @@ class _Simulation(object):
             data = self.model(data)
 
         # Remove shape logger from data
-        if hasattr(data, '_shape_logger'):
-            delattr(data, '_shape_logger')
+        if hasattr(data, "_shape_logger"):
+            delattr(data, "_shape_logger")
 
         # Collect neighbor list (edge_index) if dumping is enabled
         if self.dump_neighbor_list:
-            if hasattr(data, '_dump_neighbor_list'):
-                delattr(data, '_dump_neighbor_list')
+            if hasattr(data, "_dump_neighbor_list"):
+                delattr(data, "_dump_neighbor_list")
             # Collect edge_index from model outputs (stored by models like SchNet)
             timestep_nl = {}
             for key, val in data.out.items():
@@ -891,17 +948,26 @@ class _Simulation(object):
             forces = data.out[FORCE_KEY].detach()
 
         # Log output shapes after model forward
-        if self.print_shape and self._shape_log_step_count <= self.print_shape_steps:
-            self._shape_log_file.write("  [calculate_potential_and_forces] OUTPUT:\n")
+        if (
+            self.print_shape
+            and self._shape_log_step_count <= self.print_shape_steps
+        ):
+            self._shape_log_file.write(
+                "  [calculate_potential_and_forces] OUTPUT:\n"
+            )
             self._log_shape("    potential (energy)", potential)
             self._log_shape("    forces", forces)
             # Log model output dict structure
-            self._shape_log_file.write("    data.out keys: {}\n".format(list(data.out.keys())))
+            self._shape_log_file.write(
+                "    data.out keys: {}\n".format(list(data.out.keys()))
+            )
             for key, val in data.out.items():
                 if isinstance(val, dict):
                     for subkey, subval in val.items():
                         if isinstance(subval, torch.Tensor):
-                            self._log_shape(f"      data.out[{key}][{subkey}]", subval)
+                            self._log_shape(
+                                f"      data.out[{key}][{subkey}]", subval
+                            )
                 elif isinstance(val, torch.Tensor):
                     self._log_shape(f"      data.out[{key}]", val)
             self._shape_log_file.write("\n")
@@ -1029,6 +1095,7 @@ class _Simulation(object):
             elif self.read_checkpoint_file:
                 # Find the latest checkpoint file (with highest index)
                 import glob
+
                 pattern = "{}_checkpoint_*.pt".format(self.filename)
                 checkpoint_files = sorted(glob.glob(pattern))
                 if checkpoint_files:
@@ -1036,7 +1103,9 @@ class _Simulation(object):
                 else:
                     # Fallback to old format for backwards compatibility
                     fn = "{}_checkpoint.pt".format(self.filename)
-                assert os.path.exists(fn), f"No checkpoint file found matching {pattern} or {fn}"
+                assert os.path.exists(fn), (
+                    f"No checkpoint file found matching {pattern} or {fn}"
+                )
                 checkpointed_data = torch.load(fn, weights_only=False)
             self.checkpointed_data = checkpointed_data
             self.current_timestep = self.checkpointed_data["current_timestep"]
@@ -1135,12 +1204,12 @@ class _Simulation(object):
         # Saving extra force components
         if self.save_force_components and (self.force_components is None):
             raise ValueError(
-                f"save_energy_components is requested,but no energy_components provided"
+                "save_energy_components is requested,but no energy_components provided"
             )
         # Saving extra energy components
         if self.save_energy_components and (self.energy_components is None):
             raise ValueError(
-                f"save_energy_components is requested,but no energy_components provided"
+                "save_energy_components is requested,but no energy_components provided"
             )
 
         # Dump neighbor list validation
@@ -1212,7 +1281,9 @@ class _Simulation(object):
                 elif isinstance(v, dict):
                     self._log_shape(str(k), v, indent + 1)
         else:
-            self._shape_log_file.write(f"{prefix}{label}: {type(tensor_or_dict).__name__}\n")
+            self._shape_log_file.write(
+                f"{prefix}{label}: {type(tensor_or_dict).__name__}\n"
+            )
 
     def _set_up_simulation(self, overwrite: bool = False):
         """Method to setup up saving and logging options"""
@@ -1276,7 +1347,7 @@ class _Simulation(object):
             self._shape_log_file = open(shape_log_path, "w")
             self._shape_log_file.write(f"Shape Log - {time.asctime()}\n")
             self._shape_log_file.write("=" * 80 + "\n")
-            self._shape_log_file.write(f"Simulation Configuration:\n")
+            self._shape_log_file.write("Simulation Configuration:\n")
             self._shape_log_file.write(f"  n_sims: {self.n_sims}\n")
             self._shape_log_file.write(f"  n_atoms: {self.n_atoms}\n")
             self._shape_log_file.write(f"  n_dims: {self.n_dims}\n")
@@ -1317,9 +1388,9 @@ class _Simulation(object):
         pos_spread = x_new.std(dim=(1, 2)).detach()
 
         # Combine conditions on GPU for single sync instead of multiple
-        diverged = (pos_spread.max() > 1e3 * self.initial_pos_spread) | torch.any(
-            torch.isnan(pos_spread)
-        )
+        diverged = (
+            pos_spread.max() > 1e3 * self.initial_pos_spread
+        ) | torch.any(torch.isnan(pos_spread))
         if diverged.item():
             raise RuntimeError(
                 f"Simulation of trajectory blew up at #timestep={t}"

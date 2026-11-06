@@ -9,17 +9,16 @@ IMPORTANT: This module REQUIRES Triton and CUDA. No fallback is provided
 to ensure bugs from missed kernel usage are caught immediately.
 """
 
+from typing import List, Optional
+
 import torch
 import torch.nn as nn
-from typing import Optional, List
-
 
 # Import FP16 Triton kernels - NO fallback, must be available
 try:
-    from flashmd.kernels import (
-        fused_linear_tanh_fp16_autograd,
-        linear_fp16_autograd,
-    )
+    from flashmd.kernels import fused_linear_tanh_fp16_autograd
+    from flashmd.kernels import linear_fp16_autograd
+
     TRITON_FP16_AVAILABLE = True
 except ImportError:
     TRITON_FP16_AVAILABLE = False
@@ -150,7 +149,7 @@ class GPTQW16A16FilterNetwork(nn.Module):
         # MLP structure: layers = [Linear, Tanh, Linear] for 2-layer filter net
         # Or with use_fused_first: first_linear + rest_layers
 
-        use_fused = getattr(mlp, 'use_fused_first', False)
+        use_fused = getattr(mlp, "use_fused_first", False)
 
         if use_fused:
             # Fused path: first_linear (layer 0) + rest_layers (layer 1)
@@ -323,7 +322,7 @@ class GPTQW16A16OutputNetwork(nn.Module):
             Quantized output network with FP16 weights
         """
         # MLP structure: layers = [Linear, Tanh, Linear, Tanh, Linear]
-        use_fused = getattr(mlp, 'use_fused_first', False)
+        use_fused = getattr(mlp, "use_fused_first", False)
 
         if use_fused:
             # Fused path: first_linear + rest_layers
@@ -347,7 +346,9 @@ class GPTQW16A16OutputNetwork(nn.Module):
         device = layer0.weight.device
 
         # Create quantized network
-        quantized = cls(in_features, hidden1_features, hidden2_features, out_features)
+        quantized = cls(
+            in_features, hidden1_features, hidden2_features, out_features
+        )
 
         # Copy weights (transpose and convert to FP16)
         with torch.no_grad():
@@ -402,9 +403,13 @@ def apply_gptq_w16a16_to_model(model: nn.Module) -> nn.Module:
 
     # Patch legacy models: add missing attributes
     for name, module in model.named_modules():
-        if module.__class__.__name__ == 'CFConv' and not hasattr(module, 'use_triton'):
+        if module.__class__.__name__ == "CFConv" and not hasattr(
+            module, "use_triton"
+        ):
             module.use_triton = True
-        if module.__class__.__name__ == 'InteractionBlock' and not hasattr(module, 'use_fused_tanh_linear'):
+        if module.__class__.__name__ == "InteractionBlock" and not hasattr(
+            module, "use_fused_tanh_linear"
+        ):
             module.use_fused_tanh_linear = False
 
     filter_count = 0
@@ -412,23 +417,33 @@ def apply_gptq_w16a16_to_model(model: nn.Module) -> nn.Module:
 
     # Quantize filter networks in CFConv layers
     for name, module in model.named_modules():
-        if hasattr(module, 'filter_network') and hasattr(module.filter_network, 'layers'):
-            quantized_filter = GPTQW16A16FilterNetwork.from_mlp(module.filter_network)
+        if hasattr(module, "filter_network") and hasattr(
+            module.filter_network, "layers"
+        ):
+            quantized_filter = GPTQW16A16FilterNetwork.from_mlp(
+                module.filter_network
+            )
             module.filter_network = quantized_filter
             filter_count += 1
 
     # Quantize output_network MLPs
     for name, module in model.named_modules():
-        if hasattr(module, 'output_network') and hasattr(module.output_network, 'layers'):
+        if hasattr(module, "output_network") and hasattr(
+            module.output_network, "layers"
+        ):
             layers = list(module.output_network.layers)
-            num_linear = sum(1 for l in layers if hasattr(l, 'weight'))
+            num_linear = sum(1 for l in layers if hasattr(l, "weight"))
 
             if num_linear == 3:
-                quantized_output = GPTQW16A16OutputNetwork.from_mlp(module.output_network)
+                quantized_output = GPTQW16A16OutputNetwork.from_mlp(
+                    module.output_network
+                )
                 module.output_network = quantized_output
                 output_count += 1
             elif num_linear == 2:
-                quantized_output = GPTQW16A16FilterNetwork.from_mlp(module.output_network)
+                quantized_output = GPTQW16A16FilterNetwork.from_mlp(
+                    module.output_network
+                )
                 module.output_network = quantized_output
                 output_count += 1
 
@@ -438,7 +453,9 @@ def apply_gptq_w16a16_to_model(model: nn.Module) -> nn.Module:
             "Ensure the model contains CFConv layers with filter_network MLPs."
         )
 
-    print(f"[GPTQ W16A16] Quantized {filter_count} filter networks, {output_count} output networks")
+    print(
+        f"[GPTQ W16A16] Quantized {filter_count} filter networks, {output_count} output networks"
+    )
 
     return model
 
@@ -465,7 +482,7 @@ def validate_gptq_w16a16(model: nn.Module) -> bool:
         If any filter network or output network is not quantized
     """
     for name, module in model.named_modules():
-        if hasattr(module, 'filter_network'):
+        if hasattr(module, "filter_network"):
             if not isinstance(module.filter_network, GPTQW16A16FilterNetwork):
                 raise RuntimeError(
                     f"Filter network in {name} is not quantized! "
@@ -473,12 +490,14 @@ def validate_gptq_w16a16(model: nn.Module) -> bool:
                     f"GPTQW16A16FilterNetwork. GPTQ quantization failed to apply."
                 )
 
-        if hasattr(module, 'output_network'):
+        if hasattr(module, "output_network"):
             valid_types = (GPTQW16A16FilterNetwork, GPTQW16A16OutputNetwork)
             if not isinstance(module.output_network, valid_types):
                 # Only warn if it's an MLP (some models might have different output networks)
-                if hasattr(module.output_network, 'layers'):
-                    print(f"[GPTQ W16A16] Warning: output_network in {name} is not quantized "
-                          f"(got {type(module.output_network).__name__})")
+                if hasattr(module.output_network, "layers"):
+                    print(
+                        f"[GPTQ W16A16] Warning: output_network in {name} is not quantized "
+                        f"(got {type(module.output_network).__name__})"
+                    )
 
     return True

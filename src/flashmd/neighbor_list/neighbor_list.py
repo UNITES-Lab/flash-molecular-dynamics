@@ -1,5 +1,7 @@
 from typing import Dict, Mapping, Optional
+
 import torch
+
 from .torch_impl import torch_neighbor_list
 
 
@@ -47,9 +49,9 @@ def atomic_data2neighbor_list(
     else:
         batch = data.batch
 
-    assert torch.all(
-        batch[mapping[0]] == batch[mapping[1]]
-    ), "torch_neighbor_list() returned pairs of indices in different structures"
+    assert torch.all(batch[mapping[0]] == batch[mapping[1]]), (
+        "torch_neighbor_list() returned pairs of indices in different structures"
+    )
 
     mapping_batch = batch[mapping[0]]
     return make_neighbor_list(

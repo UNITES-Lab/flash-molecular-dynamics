@@ -1,22 +1,19 @@
-from typing import Any, List, Dict, Tuple, Sequence
-import torch
-from jsonargparse import (
-    ActionConfigFile,
-    ArgumentParser,
-    class_from_function,
-)
-from jsonargparse.typing import Path_fr
+from typing import Any, Dict, List, Sequence, Tuple
 
-from . import (
-    _Simulation,
-    LangevinSimulation,
-    PTSimulation,
-    OverdampedSimulation,
-)
-from .logging import logger
+from jsonargparse import ActionConfigFile
+from jsonargparse import ArgumentParser
+from jsonargparse import class_from_function
+from jsonargparse.typing import Path_fr
+import torch
+
 from ..data import AtomicData
 from ..models import load_and_adapt_old_checkpoint
 from ..utils import dump_yaml
+from . import LangevinSimulation
+from . import OverdampedSimulation
+from . import PTSimulation
+from . import _Simulation
+from .logging import logger
 
 
 def parse_simulation_config(
@@ -136,7 +133,9 @@ def parse_simulation_config(
         elif batch_size < native_count:
             # Use only first batch_size molecules
             initial_data_list = initial_data_list[:batch_size]
-            logger.info(f"Using {batch_size} of {native_count} native molecules")
+            logger.info(
+                f"Using {batch_size} of {native_count} native molecules"
+            )
         elif batch_size > native_count:
             # Duplicate molecules to reach batch_size
             from copy import deepcopy

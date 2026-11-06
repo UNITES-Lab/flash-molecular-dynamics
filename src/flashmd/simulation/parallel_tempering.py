@@ -1,21 +1,20 @@
 # Authors: Nick Charron, Felix Musil, Clark Templeton
 # Based on code from Yaoyi Chen and Andreas Kramer: https://github.com/noegroup/reform
 
-from typing import List, Tuple, Any, Dict, Sequence
-import time
-import torch
-import numpy as np
-import warnings
 from copy import deepcopy
+import time
+from typing import Any, Dict, List, Sequence, Tuple
+import warnings
 
+import numpy as np
+import torch
+
+from ..data._keys import ATOM_TYPE_KEY
+from ..data._keys import ENERGY_KEY
+from ..data._keys import MASS_KEY
+from ..data._keys import POSITIONS_KEY
+from ..data._keys import VELOCITY_KEY
 from ..data.atomic_data import AtomicData
-from ..data._keys import (
-    MASS_KEY,
-    VELOCITY_KEY,
-    POSITIONS_KEY,
-    ENERGY_KEY,
-    ATOM_TYPE_KEY,
-)
 from .base import _Simulation
 from .langevin import LangevinSimulation
 from .logging import logger
@@ -117,7 +116,9 @@ class PTSimulation(LangevinSimulation):
             # Repeat attachment, this time with the condensed configurations
             self._manually_reattach_configurations(condensed_configurations)
             self._attach_model(model)
-            logger.info("Prior models have been specialized for the simulation.")
+            logger.info(
+                "Prior models have been specialized for the simulation."
+            )
         else:
             self._attach_configurations(configurations, betas=betas)
             self._attach_model(model)
@@ -404,9 +405,9 @@ class PTSimulation(LangevinSimulation):
             dim=1,
         ).to(self.device)
         # accumulate the symmetric acceptance/rejection matrices
-        self.acceptance_matrix[
-            beta_pairs[0, :], beta_pairs[1, :]
-        ] += approved_per_beta
+        self.acceptance_matrix[beta_pairs[0, :], beta_pairs[1, :]] += (
+            approved_per_beta
+        )
         self.acceptance_matrix[beta_pairs[1, :], beta_pairs[0, :]] += (
             self.n_indep_sims - approved_per_beta
         )

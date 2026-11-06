@@ -1,18 +1,17 @@
-from typing import List, Tuple, Any, Dict, Sequence, Union
-import torch
-from torch.distributions.normal import Normal
+from copy import deepcopy
+from typing import Any, Dict, List, Sequence, Tuple, Union
+import warnings
+
 import numpy as np
 import nvtx
-import warnings
-from copy import deepcopy
+import torch
+from torch.distributions.normal import Normal
 
+from ..data._keys import ENERGY_KEY
+from ..data._keys import MASS_KEY
+from ..data._keys import POSITIONS_KEY
+from ..data._keys import VELOCITY_KEY
 from ..data.atomic_data import AtomicData
-from ..data._keys import (
-    MASS_KEY,
-    VELOCITY_KEY,
-    POSITIONS_KEY,
-    ENERGY_KEY,
-)
 from .base import _Simulation
 
 torch_pi = torch.tensor(np.pi)
@@ -47,8 +46,8 @@ class LangevinSimulation(_Simulation):
         \epsilon =& \exp(-\eta \; \Delta t) \\
         & \\
         \alpha =& \sqrt{(1 - \epsilon^2) / \beta m}
-    
-    Initial velocities are sampled from the Maxwell-Boltzmann distribution for 
+
+    Initial velocities are sampled from the Maxwell-Boltzmann distribution for
     the provided beta.
 
     A diffusion constant :math:`D` can be back-calculated using
@@ -56,9 +55,9 @@ class LangevinSimulation(_Simulation):
 
     .. math::
         D = 1 / (\beta  \eta)
-    
+
     For a larger discussion on Langevin Dynamics integrators, please refer to [MDBook]_.
-        
+
     Parameters
     ----------
 
@@ -124,8 +123,14 @@ class LangevinSimulation(_Simulation):
             x_old = data[POSITIONS_KEY]
 
         # Log initial state shapes
-        if self.print_shape and self._shape_log_file and self._shape_log_step_count <= self.print_shape_steps:
-            self._shape_log_file.write("[Langevin timestep] BAOAB Integrator:\n")
+        if (
+            self.print_shape
+            and self._shape_log_file
+            and self._shape_log_step_count <= self.print_shape_steps
+        ):
+            self._shape_log_file.write(
+                "[Langevin timestep] BAOAB Integrator:\n"
+            )
             self._log_shape("  x_old (positions)", x_old)
             self._log_shape("  v_old (velocities)", v_old)
             self._log_shape("  masses", masses)
@@ -148,7 +153,11 @@ class LangevinSimulation(_Simulation):
             v_new = v_new * self.vscale + self.noisescale * noise
 
         # Log noise shape
-        if self.print_shape and self._shape_log_file and self._shape_log_step_count <= self.print_shape_steps:
+        if (
+            self.print_shape
+            and self._shape_log_file
+            and self._shape_log_step_count <= self.print_shape_steps
+        ):
             self._log_shape("  noise (O step)", noise)
 
         # A (second position half-step)
@@ -157,7 +166,11 @@ class LangevinSimulation(_Simulation):
             data[POSITIONS_KEY] = x_new
 
         # Log position after A steps
-        if self.print_shape and self._shape_log_file and self._shape_log_step_count <= self.print_shape_steps:
+        if (
+            self.print_shape
+            and self._shape_log_file
+            and self._shape_log_step_count <= self.print_shape_steps
+        ):
             self._log_shape("  x_new (after A1-O-A2)", x_new)
 
         # Force calculation (most expensive part)
@@ -170,7 +183,11 @@ class LangevinSimulation(_Simulation):
             data[VELOCITY_KEY] = v_new
 
         # Log final state
-        if self.print_shape and self._shape_log_file and self._shape_log_step_count <= self.print_shape_steps:
+        if (
+            self.print_shape
+            and self._shape_log_file
+            and self._shape_log_step_count <= self.print_shape_steps
+        ):
             self._log_shape("  v_new (final)", v_new)
             self._log_shape("  potential (output)", potential)
             self._log_shape("  forces (output)", forces)

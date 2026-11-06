@@ -1,8 +1,9 @@
 """Logging configuration for MLCG simulation using loguru."""
 
-import sys
 from datetime import datetime
 from pathlib import Path
+import sys
+
 from loguru import logger
 
 # Remove default handler to avoid duplicate logs

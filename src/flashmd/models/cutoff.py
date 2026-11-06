@@ -1,8 +1,9 @@
+import math
 from typing import Union
+
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
-import math
 
 
 class _Cutoff(nn.Module):

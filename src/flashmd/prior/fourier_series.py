@@ -1,16 +1,15 @@
 from __future__ import annotations
 
+from typing import Dict, Final, Optional
+
 from scipy.integrate import trapezoid
 from scipy.optimize import curve_fit
 import torch
 from torch_geometric.utils import scatter
-from typing import Optional, Dict, Final
 
-from .base import _Prior
 from ..data.atomic_data import AtomicData
-from ..geometry.internal_coordinates import (
-    compute_torsions,
-)
+from ..geometry.internal_coordinates import compute_torsions
+from .base import _Prior
 
 
 class FourierSeries(_Prior):
@@ -134,7 +133,7 @@ class FourierSeries(_Prior):
         params = self.data2parameters(data)
         y = FourierSeries.compute(features, **params)
         # Use data.ptr to avoid GPU-CPU sync in scatter
-        num_graphs = data.ptr.numel() - 1 if hasattr(data, 'ptr') else None
+        num_graphs = data.ptr.numel() - 1 if hasattr(data, "ptr") else None
         y = scatter(y, mapping_batch, dim=0, reduce="sum", dim_size=num_graphs)
         data.out[self.name] = {"energy": y}
         return data
@@ -419,7 +418,7 @@ class FourierSeries(_Prior):
                 popt = popts[best_i_val]
                 stat = FourierSeries._make_parameter_dict(stat, popt, n_degs)
             except:
-                print(f"failed to fit potential estimate for FourierSeries")
+                print("failed to fit potential estimate for FourierSeries")
                 stat = FourierSeries._init_parameter_dict(n_degs)
                 k1_names = sorted(list(stat["k1s"].keys()))
                 k2_names = sorted(list(stat["k2s"].keys()))

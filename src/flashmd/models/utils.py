@@ -1,6 +1,10 @@
-import torch
 from warnings import warn
-from ..prior import _Prior, Dihedral, Harmonic
+
+import torch
+
+from ..prior import Dihedral
+from ..prior import Harmonic
+from ..prior import _Prior
 
 
 def sparsify_prior_module(module: _Prior) -> torch.nn.Module:
@@ -16,7 +20,7 @@ def sparsify_prior_module(module: _Prior) -> torch.nn.Module:
         module.k = module.k.to_sparse()
     else:
         warn(
-            f"Module is not supported for sparsification. It will be returned as is"
+            "Module is not supported for sparsification. It will be returned as is"
         )
     return module
 

@@ -1,5 +1,7 @@
+from typing import Final, List, Optional
+
 import torch
-from typing import Optional, List, Final
+
 from ._module_init import init_xavier_uniform
 
 

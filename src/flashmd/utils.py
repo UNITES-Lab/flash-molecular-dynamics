@@ -1,6 +1,6 @@
 import sys
-from ruamel.yaml import YAML
 
+from ruamel.yaml import YAML
 
 yaml = YAML(pure="true", typ="safe")
 yaml.default_flow_style = False

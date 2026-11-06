@@ -1,10 +1,13 @@
 from typing import List, Tuple, Union
-import torch
+
 import numpy as np
 import nvtx
+import torch
 
+from ..data._keys import MASS_KEY
+from ..data._keys import POSITIONS_KEY
+from ..data._keys import VELOCITY_KEY
 from ..data.atomic_data import AtomicData
-from ..data._keys import MASS_KEY, VELOCITY_KEY, POSITIONS_KEY
 from .base import _Simulation
 from .langevin import LangevinSimulation
 
@@ -58,22 +61,35 @@ class NVESimulation(_Simulation):
                     self.initial_data[MASS_KEY],
                 ).to(self.dtype)
             )
-        assert self.initial_data[VELOCITY_KEY].shape == self.initial_data[POSITIONS_KEY].shape
+        assert (
+            self.initial_data[VELOCITY_KEY].shape
+            == self.initial_data[POSITIONS_KEY].shape
+        )
 
     def _set_up_simulation(self, overwrite: bool = False):
         super()._set_up_simulation(overwrite)
         if self.save_energies:
-            self.simulated_kinetic_energies = torch.zeros(self._save_size, self.n_sims)
+            self.simulated_kinetic_energies = torch.zeros(
+                self._save_size, self.n_sims
+            )
         else:
             self.simulated_kinetic_energies = None
 
-    def save(self, data: AtomicData, forces: torch.Tensor, potential: torch.Tensor, t: int):
+    def save(
+        self,
+        data: AtomicData,
+        forces: torch.Tensor,
+        potential: torch.Tensor,
+        t: int,
+    ):
         super().save(data, forces, potential, t)
         if self.save_energies:
             v = data[VELOCITY_KEY].view(-1, self.n_atoms, self.n_dims)
             m = data[MASS_KEY].view(self.n_sims, self.n_atoms)
             ke = 0.5 * torch.sum(m[:, :, None] * v**2, dim=(1, 2))
-            save_ind = (t // self.save_interval) - self._npy_file_index * self._save_size
+            save_ind = (
+                t // self.save_interval
+            ) - self._npy_file_index * self._save_size
             self.simulated_kinetic_energies[save_ind, :] = ke
 
     def write(self):
@@ -81,7 +97,9 @@ class NVESimulation(_Simulation):
             key = self._get_numpy_count()
             ke_export = self._swap_and_export(self.simulated_kinetic_energies)
             np.save(f"{self.filename}_kineticenergy_{key}.npy", ke_export)
-            self.simulated_kinetic_energies = torch.zeros(self._save_size, self.n_sims)
+            self.simulated_kinetic_energies = torch.zeros(
+                self._save_size, self.n_sims
+            )
         super().write()
 
     def reshape_output(self):

@@ -1,8 +1,9 @@
 """HuggingFace Hub integration for loading pre-trained FlashMD models."""
 
-import torch
 from pathlib import Path
 from typing import Optional
+
+import torch
 
 
 def from_pretrained(

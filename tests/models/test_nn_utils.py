@@ -1,11 +1,14 @@
 from copy import deepcopy
 import functools
+
 import numpy as np
 import pytest
 import torch
 
-from flashmd.models.utils import desparsify_prior_module, sparsify_prior_module
-from flashmd.prior import HarmonicAngles, Dihedral
+from flashmd.models.utils import desparsify_prior_module
+from flashmd.models.utils import sparsify_prior_module
+from flashmd.prior import Dihedral
+from flashmd.prior import HarmonicAngles
 
 rng = np.random.default_rng()
 

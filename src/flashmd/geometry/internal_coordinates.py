@@ -1,8 +1,9 @@
 """TODO: write tests"""
 
 import math
-import torch
 from typing import List, Optional
+
+import torch
 
 
 @torch.jit.script
@@ -78,7 +79,7 @@ def compute_distances(
     r"""Compute the distance between the positions in :obj:`pos` following the
     :obj:`mapping` assuming that mapping indices follow::
 
-     i--j
+     i - -j
 
     such that:
 
@@ -119,7 +120,7 @@ def compute_angles_raw(
         \theta_{ijk} = &\text{atan2}(\Vert \hat{\mathbf{n}} \vert, \mathbf{r}_{ij} \cdot \mathbf{r}_{kj} ) \\
         \mathbf{r}_{ij} &= \mathbf{r}_i - \mathbf{r}_j \\
         \mathbf{r}_{kj} &= \mathbf{r}_k - \mathbf{r}_j \\
-        \mathbf{\hat{n}} &= \frac{\mathbf{r}_{ij} \times \mathbf{r}_{kj}}{\Vert \mathbf{r}_{ij} \times \mathbf{r}_{kj} \Vert} 
+        \mathbf{\hat{n}} &= \frac{\mathbf{r}_{ij} \times \mathbf{r}_{kj}}{\Vert \mathbf{r}_{ij} \times \mathbf{r}_{kj} \Vert}
 
     """
     assert mapping.dim() == 2
@@ -152,7 +153,7 @@ def compute_angles_cos(
 
         \cos{\theta_{ijk}} &= \frac{\mathbf{r}_{ij} \cdot \mathbf{r}_{jk}}{ \Vert \mathbf{r}_{ji}  \Vert \Vert \mathbf{r}_{kj} \Vert}  \\
         \mathbf{r}_{ij} &= \mathbf{r}_i - \mathbf{r}_j \\
-        \mathbf{r}_{kj} &= \mathbf{r}_k - \mathbf{r}_j 
+        \mathbf{r}_{kj} &= \mathbf{r}_k - \mathbf{r}_j
 
     In the case of periodic boundary conditions, :obj:`cell_shifts` must be
     provided so that :math:`\mathbf{r}_j` can be outside of the original unit
@@ -198,10 +199,10 @@ def compute_torsions(pos: torch.Tensor, mapping: torch.Tensor):
         \phi_{ijkl} &= \text{atan2}(-\mathbf{m} \cdot \mathbf{n}_2, \mathbf{n}_2 \cdot \mathbf{n}_1) \\
         \mathbf{n}_1 &= \mathbf{\hat{r}}_{ji} \times \mathbf{\hat{r}}_{kj} \\
         \mathbf{n}_2 &= \mathbf{\hat{r}}_{kj} \times \mathbf{\hat{r}}_{jl} \\
-        \mathbf{m} &= \mathbf{n}_{1} \times \mathbf{\hat{r}}_{kj} 
+        \mathbf{m} &= \mathbf{n}_{1} \times \mathbf{\hat{r}}_{kj}
 
-    Where the :math:`\hat{u}` indicates a normalized vector in direction of :math:`u`. 
-    The order and signs in the atan2 arguments are needed to obtain values consistent 
+    Where the :math:`\hat{u}` indicates a normalized vector in direction of :math:`u`.
+    The order and signs in the atan2 arguments are needed to obtain values consistent
     with mdtraj. In the case of periodic boundary conditions, :obj:`cell_shifts` must be
     provided so that :math:`\mathbf{r}_j` can be outside of the original unit
     cell.
@@ -209,9 +210,15 @@ def compute_torsions(pos: torch.Tensor, mapping: torch.Tensor):
     assert mapping.dim() == 2
     assert mapping.shape[0] == 4
     # Use F.normalize for fused norm+division (fewer kernel launches)
-    dr1 = torch.nn.functional.normalize(pos[mapping[1]] - pos[mapping[0]], dim=1)
-    dr2 = torch.nn.functional.normalize(pos[mapping[2]] - pos[mapping[1]], dim=1)
-    dr3 = torch.nn.functional.normalize(pos[mapping[3]] - pos[mapping[2]], dim=1)
+    dr1 = torch.nn.functional.normalize(
+        pos[mapping[1]] - pos[mapping[0]], dim=1
+    )
+    dr2 = torch.nn.functional.normalize(
+        pos[mapping[2]] - pos[mapping[1]], dim=1
+    )
+    dr3 = torch.nn.functional.normalize(
+        pos[mapping[3]] - pos[mapping[2]], dim=1
+    )
 
     n1 = torch.cross(dr1, dr2, dim=1)
     n2 = torch.cross(dr2, dr3, dim=1)

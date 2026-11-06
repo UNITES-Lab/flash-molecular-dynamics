@@ -1,6 +1,7 @@
 """
 Fused Triton kernels for CFConv operations.
 """
+
 import torch
 import triton
 import triton.language as tl
@@ -349,18 +350,39 @@ class FusedCutoffGatherMultiplyScatterFunction(torch.autograd.Function):
     """
 
     @staticmethod
-    def forward(ctx, x, filter_out, edge_weight, edge_src, edge_dst, num_nodes, cutoff_upper, src_ptr, src_perm):
-        ctx.save_for_backward(x, filter_out, edge_weight, edge_src, edge_dst, src_ptr, src_perm)
+    def forward(
+        ctx,
+        x,
+        filter_out,
+        edge_weight,
+        edge_src,
+        edge_dst,
+        num_nodes,
+        cutoff_upper,
+        src_ptr,
+        src_perm,
+    ):
+        ctx.save_for_backward(
+            x, filter_out, edge_weight, edge_src, edge_dst, src_ptr, src_perm
+        )
         ctx.num_nodes = num_nodes
         ctx.cutoff_upper = cutoff_upper
         ctx.filter_out_dtype = filter_out.dtype  # Save dtype for backward
         return fused_cutoff_gather_multiply_scatter(
-            x, filter_out, edge_weight, edge_src, edge_dst, num_nodes, cutoff_upper
+            x,
+            filter_out,
+            edge_weight,
+            edge_src,
+            edge_dst,
+            num_nodes,
+            cutoff_upper,
         )
 
     @staticmethod
     def backward(ctx, grad_output):
-        x, filter_out, edge_weight, edge_src, edge_dst, src_ptr, src_perm = ctx.saved_tensors
+        x, filter_out, edge_weight, edge_src, edge_dst, src_ptr, src_perm = (
+            ctx.saved_tensors
+        )
         num_nodes = ctx.num_nodes
         cutoff_upper = ctx.cutoff_upper
         filter_out_dtype = ctx.filter_out_dtype
@@ -376,6 +398,7 @@ class FusedCutoffGatherMultiplyScatterFunction(torch.autograd.Function):
             if src_ptr is not None and src_perm is not None:
                 # === Src-CSR Path (no atomics!) ===
                 from flashmd.kernels.csr_kernels import fused_src_csr_grad_x
+
                 grad_x = fused_src_csr_grad_x(
                     grad_output,
                     filter_out,
@@ -437,7 +460,15 @@ def fused_cutoff_gather_multiply_scatter_autograd(
         Src-CSR permutation [num_edges]. Required with src_ptr.
     """
     return FusedCutoffGatherMultiplyScatterFunction.apply(
-        x, filter_out, edge_weight, edge_src, edge_dst, num_nodes, cutoff_upper, src_ptr, src_perm
+        x,
+        filter_out,
+        edge_weight,
+        edge_src,
+        edge_dst,
+        num_nodes,
+        cutoff_upper,
+        src_ptr,
+        src_perm,
     )
 
 
@@ -456,28 +487,60 @@ def _triton_tanh(x):
 
 @triton.autotune(
     configs=[
-        triton.Config({'BLOCK_M': 32, 'BLOCK_N': 64, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 64, 'BLOCK_N': 64, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 32, 'BLOCK_N': 128, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 64, 'BLOCK_N': 128, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 128, 'BLOCK_N': 64, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 128, 'BLOCK_N': 128, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
+        triton.Config(
+            {"BLOCK_M": 32, "BLOCK_N": 64, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 64, "BLOCK_N": 64, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 32, "BLOCK_N": 128, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 64, "BLOCK_N": 128, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 128, "BLOCK_N": 64, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 128, "BLOCK_N": 128, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
     ],
-    key=['N', 'K']  # NOT M! M varies per step, would trigger autotune ~1500ms each,
+    key=[
+        "N",
+        "K",
+    ],  # NOT M! M varies per step, would trigger autotune ~1500ms each,
 )
 @triton.jit
 def fused_linear_tanh_kernel(
     # Pointers
-    x_ptr,      # Input [M, K]
-    w_ptr,      # Weight [K, N]
-    b_ptr,      # Bias [N] or None
-    y_ptr,      # Output [M, N]
+    x_ptr,  # Input [M, K]
+    w_ptr,  # Weight [K, N]
+    b_ptr,  # Bias [N] or None
+    y_ptr,  # Output [M, N]
     # Dimensions
-    M, N, K,
+    M,
+    N,
+    K,
     # Strides
-    stride_xm, stride_xk,
-    stride_wk, stride_wn,
-    stride_ym, stride_yn,
+    stride_xm,
+    stride_xk,
+    stride_wk,
+    stride_wn,
+    stride_ym,
+    stride_yn,
     # Meta-parameters
     HAS_BIAS: tl.constexpr,
     BLOCK_M: tl.constexpr,
@@ -514,12 +577,16 @@ def fused_linear_tanh_kernel(
         k_offs = k_start + offs_k
 
         # load X block [BLOCK_M, BLOCK_K]
-        x_ptrs = x_ptr + offs_m[:, None] * stride_xm + k_offs[None, :] * stride_xk
+        x_ptrs = (
+            x_ptr + offs_m[:, None] * stride_xm + k_offs[None, :] * stride_xk
+        )
         x_mask = (offs_m[:, None] < M) & (k_offs[None, :] < K)
         x_block = tl.load(x_ptrs, mask=x_mask, other=0.0)
 
         # load W block [BLOCK_K, BLOCK_N]
-        w_ptrs = w_ptr + k_offs[:, None] * stride_wk + offs_n[None, :] * stride_wn
+        w_ptrs = (
+            w_ptr + k_offs[:, None] * stride_wk + offs_n[None, :] * stride_wn
+        )
         w_mask = (k_offs[:, None] < K) & (offs_n[None, :] < N)
         w_block = tl.load(w_ptrs, mask=w_mask, other=0.0)
 
@@ -541,9 +608,7 @@ def fused_linear_tanh_kernel(
 
 
 def fused_linear_tanh(
-    x: torch.Tensor,
-    weight: torch.Tensor,
-    bias: torch.Tensor = None
+    x: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor = None
 ) -> torch.Tensor:
     """
     Compute Y = tanh(X @ W + b) using fused Triton kernel.
@@ -567,7 +632,9 @@ def fused_linear_tanh(
 
     M, K = x.shape
     K2, N = weight.shape
-    assert K == K2, f"Dimension mismatch: x has {K} columns but weight has {K2} rows"
+    assert K == K2, (
+        f"Dimension mismatch: x has {K} columns but weight has {K2} rows"
+    )
 
     # allocate output
     y = torch.empty((M, N), device=x.device, dtype=x.dtype)
@@ -575,18 +642,25 @@ def fused_linear_tanh(
     # grid
     def grid(META):
         return (
-            triton.cdiv(M, META['BLOCK_M']),
-            triton.cdiv(N, META['BLOCK_N']),
+            triton.cdiv(M, META["BLOCK_M"]),
+            triton.cdiv(N, META["BLOCK_N"]),
         )
 
     # launch kernel
     fused_linear_tanh_kernel[grid](
-        x, weight, bias if bias is not None else x,
+        x,
+        weight,
+        bias if bias is not None else x,
         y,
-        M, N, K,
-        x.stride(0), x.stride(1),
-        weight.stride(0), weight.stride(1),
-        y.stride(0), y.stride(1),
+        M,
+        N,
+        K,
+        x.stride(0),
+        x.stride(1),
+        weight.stride(0),
+        weight.stride(1),
+        y.stride(0),
+        y.stride(1),
         HAS_BIAS=(bias is not None),
     )
 
@@ -628,9 +702,7 @@ class FusedLinearTanhFunction(torch.autograd.Function):
 
 
 def fused_linear_tanh_autograd(
-    x: torch.Tensor,
-    weight: torch.Tensor,
-    bias: torch.Tensor = None
+    x: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor = None
 ) -> torch.Tensor:
     return FusedLinearTanhFunction.apply(x, weight, bias)
 
@@ -645,28 +717,45 @@ def fused_linear_tanh_autograd(
     configs=[
         # For large M (simulation workload: M ~ 500k-1M), use large blocks
         # BLOCK_M=128 works well for tall matrices
-        triton.Config({'BLOCK_M': 128, 'BLOCK_N': 128, 'BLOCK_K': 64}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 64, 'BLOCK_N': 128, 'BLOCK_K': 64}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 128, 'BLOCK_N': 64, 'BLOCK_K': 64}, num_stages=2, num_warps=4),
+        triton.Config(
+            {"BLOCK_M": 128, "BLOCK_N": 128, "BLOCK_K": 64},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 64, "BLOCK_N": 128, "BLOCK_K": 64},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 128, "BLOCK_N": 64, "BLOCK_K": 64},
+            num_stages=2,
+            num_warps=4,
+        ),
     ],
     # CRITICAL: Only key on N and K, NOT M!
     # M (num_edges) varies every simulation step, keying on M causes
     # autotune to run for every unique M value (1500ms per call!)
-    key=['N', 'K'],
+    key=["N", "K"],
 )
 @triton.jit
 def fused_linear_tanh_fp16_kernel(
     # Pointers
-    x_ptr,      # Input [M, K] - FP32
-    w_ptr,      # Weight [K, N] - FP16
-    b_ptr,      # Bias [N] - FP16 or None
-    y_ptr,      # Output [M, N] - FP16
+    x_ptr,  # Input [M, K] - FP32
+    w_ptr,  # Weight [K, N] - FP16
+    b_ptr,  # Bias [N] - FP16 or None
+    y_ptr,  # Output [M, N] - FP16
     # Dimensions
-    M, N, K,
+    M,
+    N,
+    K,
     # Strides
-    stride_xm, stride_xk,
-    stride_wk, stride_wn,
-    stride_ym, stride_yn,
+    stride_xm,
+    stride_xk,
+    stride_wk,
+    stride_wn,
+    stride_ym,
+    stride_yn,
     # Meta-parameters
     HAS_BIAS: tl.constexpr,
     BLOCK_M: tl.constexpr,
@@ -696,12 +785,16 @@ def fused_linear_tanh_fp16_kernel(
         k_offs = k_start + offs_k
 
         # Load X block as FP32, convert to FP16 for matmul
-        x_ptrs = x_ptr + offs_m[:, None] * stride_xm + k_offs[None, :] * stride_xk
+        x_ptrs = (
+            x_ptr + offs_m[:, None] * stride_xm + k_offs[None, :] * stride_xk
+        )
         x_mask = (offs_m[:, None] < M) & (k_offs[None, :] < K)
         x_block = tl.load(x_ptrs, mask=x_mask, other=0.0).to(tl.float16)
 
         # Load W block as FP16
-        w_ptrs = w_ptr + k_offs[:, None] * stride_wk + offs_n[None, :] * stride_wn
+        w_ptrs = (
+            w_ptr + k_offs[:, None] * stride_wk + offs_n[None, :] * stride_wn
+        )
         w_mask = (k_offs[:, None] < K) & (offs_n[None, :] < N)
         w_block = tl.load(w_ptrs, mask=w_mask, other=0.0)
 
@@ -721,9 +814,7 @@ def fused_linear_tanh_fp16_kernel(
 
 
 def fused_linear_tanh_fp16(
-    x: torch.Tensor,
-    weight: torch.Tensor,
-    bias: torch.Tensor = None
+    x: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor = None
 ) -> torch.Tensor:
     """
     Y_fp16 = tanh(X @ W_fp16 + b_fp16)
@@ -732,8 +823,12 @@ def fused_linear_tanh_fp16(
     The kernel handles both input types - FP32 is converted to FP16 for matmul,
     FP16 is used directly.
     """
-    assert x.dtype in (torch.float32, torch.float16), f"Input must be FP32 or FP16, got {x.dtype}"
-    assert weight.dtype == torch.float16, f"Weight must be FP16, got {weight.dtype}"
+    assert x.dtype in (torch.float32, torch.float16), (
+        f"Input must be FP32 or FP16, got {x.dtype}"
+    )
+    assert weight.dtype == torch.float16, (
+        f"Weight must be FP16, got {weight.dtype}"
+    )
     assert x.is_cuda and x.is_contiguous()
     assert weight.is_cuda and weight.is_contiguous()
 
@@ -744,14 +839,25 @@ def fused_linear_tanh_fp16(
     y = torch.empty((M, N), device=x.device, dtype=torch.float16)
 
     def grid(META):
-        return (triton.cdiv(M, META['BLOCK_M']), triton.cdiv(N, META['BLOCK_N']))
+        return (
+            triton.cdiv(M, META["BLOCK_M"]),
+            triton.cdiv(N, META["BLOCK_N"]),
+        )
 
     fused_linear_tanh_fp16_kernel[grid](
-        x, weight, bias if bias is not None else x, y,
-        M, N, K,
-        x.stride(0), x.stride(1),
-        weight.stride(0), weight.stride(1),
-        y.stride(0), y.stride(1),
+        x,
+        weight,
+        bias if bias is not None else x,
+        y,
+        M,
+        N,
+        K,
+        x.stride(0),
+        x.stride(1),
+        weight.stride(0),
+        weight.stride(1),
+        y.stride(0),
+        y.stride(1),
         HAS_BIAS=(bias is not None),
     )
 
@@ -766,28 +872,60 @@ def fused_linear_tanh_fp16(
 @triton.autotune(
     configs=[
         # Small matrix configs (M < 10k, K=128, N=128)
-        triton.Config({'BLOCK_M': 16, 'BLOCK_N': 64, 'BLOCK_K': 64}, num_stages=1, num_warps=2),
-        triton.Config({'BLOCK_M': 16, 'BLOCK_N': 128, 'BLOCK_K': 64}, num_stages=1, num_warps=2),
-        triton.Config({'BLOCK_M': 32, 'BLOCK_N': 64, 'BLOCK_K': 64}, num_stages=1, num_warps=4),
-        triton.Config({'BLOCK_M': 32, 'BLOCK_N': 128, 'BLOCK_K': 128}, num_stages=1, num_warps=4),
+        triton.Config(
+            {"BLOCK_M": 16, "BLOCK_N": 64, "BLOCK_K": 64},
+            num_stages=1,
+            num_warps=2,
+        ),
+        triton.Config(
+            {"BLOCK_M": 16, "BLOCK_N": 128, "BLOCK_K": 64},
+            num_stages=1,
+            num_warps=2,
+        ),
+        triton.Config(
+            {"BLOCK_M": 32, "BLOCK_N": 64, "BLOCK_K": 64},
+            num_stages=1,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 32, "BLOCK_N": 128, "BLOCK_K": 128},
+            num_stages=1,
+            num_warps=4,
+        ),
         # Medium/Large matrix configs
-        triton.Config({'BLOCK_M': 64, 'BLOCK_N': 128, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 128, 'BLOCK_N': 128, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
+        triton.Config(
+            {"BLOCK_M": 64, "BLOCK_N": 128, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 128, "BLOCK_N": 128, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
     ],
-    key=['N', 'K']  # NOT M! M varies per step, would trigger autotune ~1500ms each,
+    key=[
+        "N",
+        "K",
+    ],  # NOT M! M varies per step, would trigger autotune ~1500ms each,
 )
 @triton.jit
 def linear_fp16_kernel(
     # Pointers
-    x_ptr,      # Input [M, K] - FP16
-    w_ptr,      # Weight [K, N] - FP16
-    y_ptr,      # Output [M, N] - FP32
+    x_ptr,  # Input [M, K] - FP16
+    w_ptr,  # Weight [K, N] - FP16
+    y_ptr,  # Output [M, N] - FP32
     # Dimensions
-    M, N, K,
+    M,
+    N,
+    K,
     # Strides
-    stride_xm, stride_xk,
-    stride_wk, stride_wn,
-    stride_ym, stride_yn,
+    stride_xm,
+    stride_xk,
+    stride_wk,
+    stride_wn,
+    stride_ym,
+    stride_yn,
     # Meta-parameters
     BLOCK_M: tl.constexpr,
     BLOCK_N: tl.constexpr,
@@ -814,12 +952,16 @@ def linear_fp16_kernel(
         k_offs = k_start + offs_k
 
         # Load FP16 input
-        x_ptrs = x_ptr + offs_m[:, None] * stride_xm + k_offs[None, :] * stride_xk
+        x_ptrs = (
+            x_ptr + offs_m[:, None] * stride_xm + k_offs[None, :] * stride_xk
+        )
         x_mask = (offs_m[:, None] < M) & (k_offs[None, :] < K)
         x_block = tl.load(x_ptrs, mask=x_mask, other=0.0)
 
         # Load FP16 weight
-        w_ptrs = w_ptr + k_offs[:, None] * stride_wk + offs_n[None, :] * stride_wn
+        w_ptrs = (
+            w_ptr + k_offs[:, None] * stride_wk + offs_n[None, :] * stride_wn
+        )
         w_mask = (k_offs[:, None] < K) & (offs_n[None, :] < N)
         w_block = tl.load(w_ptrs, mask=w_mask, other=0.0)
 
@@ -857,10 +999,14 @@ def linear_fp16(
         Output [M, N] in out_dtype
     """
     assert x.dtype == torch.float16, f"Input must be FP16, got {x.dtype}"
-    assert weight.dtype == torch.float16, f"Weight must be FP16, got {weight.dtype}"
+    assert weight.dtype == torch.float16, (
+        f"Weight must be FP16, got {weight.dtype}"
+    )
     assert x.is_cuda and x.is_contiguous()
     assert weight.is_cuda and weight.is_contiguous()
-    assert out_dtype in (torch.float32, torch.float16), f"out_dtype must be FP32 or FP16"
+    assert out_dtype in (torch.float32, torch.float16), (
+        "out_dtype must be FP32 or FP16"
+    )
 
     M, K = x.shape
     K2, N = weight.shape
@@ -870,23 +1016,40 @@ def linear_fp16(
     y = torch.empty((M, N), device=x.device, dtype=out_dtype)
 
     def grid(META):
-        return (triton.cdiv(M, META['BLOCK_M']), triton.cdiv(N, META['BLOCK_N']))
+        return (
+            triton.cdiv(M, META["BLOCK_M"]),
+            triton.cdiv(N, META["BLOCK_N"]),
+        )
 
     if out_dtype == torch.float32:
         linear_fp16_kernel[grid](
-            x, weight, y,
-            M, N, K,
-            x.stride(0), x.stride(1),
-            weight.stride(0), weight.stride(1),
-            y.stride(0), y.stride(1),
+            x,
+            weight,
+            y,
+            M,
+            N,
+            K,
+            x.stride(0),
+            x.stride(1),
+            weight.stride(0),
+            weight.stride(1),
+            y.stride(0),
+            y.stride(1),
         )
     else:
         linear_fp16_to_fp16_kernel[grid](
-            x, weight, y,
-            M, N, K,
-            x.stride(0), x.stride(1),
-            weight.stride(0), weight.stride(1),
-            y.stride(0), y.stride(1),
+            x,
+            weight,
+            y,
+            M,
+            N,
+            K,
+            x.stride(0),
+            x.stride(1),
+            weight.stride(0),
+            weight.stride(1),
+            y.stride(0),
+            y.stride(1),
         )
 
     return y
@@ -895,22 +1058,53 @@ def linear_fp16(
 # Kernel for FP16 output (accumulate in FP32, store as FP16)
 @triton.autotune(
     configs=[
-        triton.Config({'BLOCK_M': 16, 'BLOCK_N': 64, 'BLOCK_K': 64}, num_stages=1, num_warps=2),
-        triton.Config({'BLOCK_M': 16, 'BLOCK_N': 128, 'BLOCK_K': 64}, num_stages=1, num_warps=2),
-        triton.Config({'BLOCK_M': 32, 'BLOCK_N': 64, 'BLOCK_K': 64}, num_stages=1, num_warps=4),
-        triton.Config({'BLOCK_M': 32, 'BLOCK_N': 128, 'BLOCK_K': 128}, num_stages=1, num_warps=4),
-        triton.Config({'BLOCK_M': 64, 'BLOCK_N': 128, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 128, 'BLOCK_N': 128, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
+        triton.Config(
+            {"BLOCK_M": 16, "BLOCK_N": 64, "BLOCK_K": 64},
+            num_stages=1,
+            num_warps=2,
+        ),
+        triton.Config(
+            {"BLOCK_M": 16, "BLOCK_N": 128, "BLOCK_K": 64},
+            num_stages=1,
+            num_warps=2,
+        ),
+        triton.Config(
+            {"BLOCK_M": 32, "BLOCK_N": 64, "BLOCK_K": 64},
+            num_stages=1,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 32, "BLOCK_N": 128, "BLOCK_K": 128},
+            num_stages=1,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 64, "BLOCK_N": 128, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 128, "BLOCK_N": 128, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
     ],
-    key=['N', 'K'],
+    key=["N", "K"],
 )
 @triton.jit
 def linear_fp16_to_fp16_kernel(
-    x_ptr, w_ptr, y_ptr,
-    M, N, K,
-    stride_xm, stride_xk,
-    stride_wk, stride_wn,
-    stride_ym, stride_yn,
+    x_ptr,
+    w_ptr,
+    y_ptr,
+    M,
+    N,
+    K,
+    stride_xm,
+    stride_xk,
+    stride_wk,
+    stride_wn,
+    stride_ym,
+    stride_yn,
     BLOCK_M: tl.constexpr,
     BLOCK_N: tl.constexpr,
     BLOCK_K: tl.constexpr,
@@ -936,11 +1130,15 @@ def linear_fp16_to_fp16_kernel(
     for k_start in range(0, K, BLOCK_K):
         k_offs = k_start + offs_k
 
-        x_ptrs = x_ptr + offs_m[:, None] * stride_xm + k_offs[None, :] * stride_xk
+        x_ptrs = (
+            x_ptr + offs_m[:, None] * stride_xm + k_offs[None, :] * stride_xk
+        )
         x_mask = (offs_m[:, None] < M) & (k_offs[None, :] < K)
         x_block = tl.load(x_ptrs, mask=x_mask, other=0.0)
 
-        w_ptrs = w_ptr + k_offs[:, None] * stride_wk + offs_n[None, :] * stride_wn
+        w_ptrs = (
+            w_ptr + k_offs[:, None] * stride_wk + offs_n[None, :] * stride_wn
+        )
         w_mask = (k_offs[:, None] < K) & (offs_n[None, :] < N)
         w_block = tl.load(w_ptrs, mask=w_mask, other=0.0)
 
@@ -963,28 +1161,50 @@ def linear_fp16_to_fp16_kernel(
 @triton.autotune(
     configs=[
         # Tall-skinny configs: large BLOCK_M, full K coverage
-        triton.Config({'BLOCK_M': 128, 'BLOCK_N': 64, 'BLOCK_K': 128}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 256, 'BLOCK_N': 64, 'BLOCK_K': 128}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 128, 'BLOCK_N': 64, 'BLOCK_K': 64}, num_stages=3, num_warps=4),
-        triton.Config({'BLOCK_M': 256, 'BLOCK_N': 64, 'BLOCK_K': 64}, num_stages=3, num_warps=8),
+        triton.Config(
+            {"BLOCK_M": 128, "BLOCK_N": 64, "BLOCK_K": 128},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 256, "BLOCK_N": 64, "BLOCK_K": 128},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 128, "BLOCK_N": 64, "BLOCK_K": 64},
+            num_stages=3,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 256, "BLOCK_N": 64, "BLOCK_K": 64},
+            num_stages=3,
+            num_warps=8,
+        ),
     ],
-    key=['N', 'K'],
+    key=["N", "K"],
 )
 @triton.jit
 def fused_tanh_backward_grad_x_v2_kernel(
     # Inputs
     grad_out_ptr,  # [M, K_out] FP16
-    y_ptr,         # [M, K_out] FP16
+    y_ptr,  # [M, K_out] FP16
     weight_t_ptr,  # [K_out, N] FP16 - PRE-TRANSPOSED, contiguous
     # Output
-    grad_x_ptr,    # [M, N] FP32
+    grad_x_ptr,  # [M, N] FP32
     # Dimensions
-    M, N, K_out,
+    M,
+    N,
+    K_out,
     # Strides
-    stride_gm, stride_gk,
-    stride_ym, stride_yk,
-    stride_wtk, stride_wtn,  # weight_t strides
-    stride_xm, stride_xn,
+    stride_gm,
+    stride_gk,
+    stride_ym,
+    stride_yk,
+    stride_wtk,
+    stride_wtn,  # weight_t strides
+    stride_xm,
+    stride_xn,
     # Block sizes
     BLOCK_M: tl.constexpr,
     BLOCK_N: tl.constexpr,
@@ -1009,11 +1229,17 @@ def fused_tanh_backward_grad_x_v2_kernel(
         k_offs = k_start + offs_k
 
         # Load grad_out and y
-        g_ptrs = grad_out_ptr + offs_m[:, None] * stride_gm + k_offs[None, :] * stride_gk
+        g_ptrs = (
+            grad_out_ptr
+            + offs_m[:, None] * stride_gm
+            + k_offs[None, :] * stride_gk
+        )
         g_mask = (offs_m[:, None] < M) & (k_offs[None, :] < K_out)
         grad_out_block = tl.load(g_ptrs, mask=g_mask, other=0.0)
 
-        y_ptrs = y_ptr + offs_m[:, None] * stride_ym + k_offs[None, :] * stride_yk
+        y_ptrs = (
+            y_ptr + offs_m[:, None] * stride_ym + k_offs[None, :] * stride_yk
+        )
         y_block = tl.load(y_ptrs, mask=g_mask, other=0.0)
 
         # Fused tanh derivative: grad_z = grad_out * (1 - y^2)
@@ -1023,14 +1249,22 @@ def fused_tanh_backward_grad_x_v2_kernel(
         grad_z_fp16 = grad_z_block.to(tl.float16)
 
         # Load weight_t[K_out, N] - already transposed, contiguous access!
-        wt_ptrs = weight_t_ptr + k_offs[:, None] * stride_wtk + offs_n[None, :] * stride_wtn
+        wt_ptrs = (
+            weight_t_ptr
+            + k_offs[:, None] * stride_wtk
+            + offs_n[None, :] * stride_wtn
+        )
         wt_mask = (k_offs[:, None] < K_out) & (offs_n[None, :] < N)
-        wt_block = tl.load(wt_ptrs, mask=wt_mask, other=0.0)  # [BLOCK_K, BLOCK_N]
+        wt_block = tl.load(
+            wt_ptrs, mask=wt_mask, other=0.0
+        )  # [BLOCK_K, BLOCK_N]
 
         # Standard matmul: [BLOCK_M, BLOCK_K] @ [BLOCK_K, BLOCK_N]
         acc += tl.dot(grad_z_fp16, wt_block)
 
-    x_ptrs = grad_x_ptr + offs_m[:, None] * stride_xm + offs_n[None, :] * stride_xn
+    x_ptrs = (
+        grad_x_ptr + offs_m[:, None] * stride_xm + offs_n[None, :] * stride_xn
+    )
     x_mask = (offs_m[:, None] < M) & (offs_n[None, :] < N)
     tl.store(x_ptrs, acc, mask=x_mask)
 
@@ -1048,17 +1282,26 @@ def fused_tanh_backward_grad_x_v2(grad_out, y, weight_t):
     grad_x = torch.empty((M, N), device=grad_out.device, dtype=torch.float32)
 
     grid = lambda META: (
-        triton.cdiv(M, META['BLOCK_M']),
-        triton.cdiv(N, META['BLOCK_N']),
+        triton.cdiv(M, META["BLOCK_M"]),
+        triton.cdiv(N, META["BLOCK_N"]),
     )
 
     fused_tanh_backward_grad_x_v2_kernel[grid](
-        grad_out, y, weight_t, grad_x,
-        M, N, K_out,
-        grad_out.stride(0), grad_out.stride(1),
-        y.stride(0), y.stride(1),
-        weight_t.stride(0), weight_t.stride(1),
-        grad_x.stride(0), grad_x.stride(1),
+        grad_out,
+        y,
+        weight_t,
+        grad_x,
+        M,
+        N,
+        K_out,
+        grad_out.stride(0),
+        grad_out.stride(1),
+        y.stride(0),
+        y.stride(1),
+        weight_t.stride(0),
+        weight_t.stride(1),
+        grad_x.stride(0),
+        grad_x.stride(1),
     )
 
     return grad_x
@@ -1067,18 +1310,24 @@ def fused_tanh_backward_grad_x_v2(grad_out, y, weight_t):
 @triton.jit
 def fused_tanh_backward_grad_weight_v2_kernel(
     # Inputs
-    x_ptr,         # [M, K] FP32
+    x_ptr,  # [M, K] FP32
     grad_out_ptr,  # [M, N] FP16
-    y_ptr,         # [M, N] FP16
+    y_ptr,  # [M, N] FP16
     # Output
     grad_weight_ptr,  # [K, N] FP32
     # Dimensions
-    M, K, N,
+    M,
+    K,
+    N,
     # Strides
-    stride_xm, stride_xk,
-    stride_gm, stride_gn,
-    stride_ym, stride_yn,
-    stride_wk, stride_wn,
+    stride_xm,
+    stride_xk,
+    stride_gm,
+    stride_gn,
+    stride_ym,
+    stride_yn,
+    stride_wk,
+    stride_wn,
     # Block sizes - tuned for K=64, N=128
     BLOCK_M: tl.constexpr,
     BLOCK_K: tl.constexpr,
@@ -1104,15 +1353,23 @@ def fused_tanh_backward_grad_weight_v2_kernel(
         m_mask = offs_m < M
 
         # Load x, grad_out, y
-        x_ptrs = x_ptr + offs_m[:, None] * stride_xm + offs_k[None, :] * stride_xk
+        x_ptrs = (
+            x_ptr + offs_m[:, None] * stride_xm + offs_k[None, :] * stride_xk
+        )
         x_mask = m_mask[:, None] & (offs_k[None, :] < K)
         x_block = tl.load(x_ptrs, mask=x_mask, other=0.0)
 
-        g_ptrs = grad_out_ptr + offs_m[:, None] * stride_gm + offs_n[None, :] * stride_gn
+        g_ptrs = (
+            grad_out_ptr
+            + offs_m[:, None] * stride_gm
+            + offs_n[None, :] * stride_gn
+        )
         g_mask = m_mask[:, None] & (offs_n[None, :] < N)
         grad_out_block = tl.load(g_ptrs, mask=g_mask, other=0.0)
 
-        y_ptrs = y_ptr + offs_m[:, None] * stride_ym + offs_n[None, :] * stride_yn
+        y_ptrs = (
+            y_ptr + offs_m[:, None] * stride_ym + offs_n[None, :] * stride_yn
+        )
         y_block = tl.load(y_ptrs, mask=g_mask, other=0.0)
 
         # Fused tanh derivative
@@ -1126,7 +1383,11 @@ def fused_tanh_backward_grad_weight_v2_kernel(
         acc += tl.dot(x_t, grad_z_fp16)
 
     # Single store - no atomics!
-    w_ptrs = grad_weight_ptr + offs_k[:, None] * stride_wk + offs_n[None, :] * stride_wn
+    w_ptrs = (
+        grad_weight_ptr
+        + offs_k[:, None] * stride_wk
+        + offs_n[None, :] * stride_wn
+    )
     w_mask = (offs_k[:, None] < K) & (offs_n[None, :] < N)
     tl.store(w_ptrs, acc, mask=w_mask)
 
@@ -1147,12 +1408,21 @@ def fused_tanh_backward_grad_weight_v2(x, grad_out, y, K_out, N_out):
     grid = (triton.cdiv(K, BLOCK_K), triton.cdiv(N_out, BLOCK_N))
 
     fused_tanh_backward_grad_weight_v2_kernel[grid](
-        x, grad_out, y, grad_weight,
-        M, K, N_out,
-        x.stride(0), x.stride(1),
-        grad_out.stride(0), grad_out.stride(1),
-        y.stride(0), y.stride(1),
-        grad_weight.stride(0), grad_weight.stride(1),
+        x,
+        grad_out,
+        y,
+        grad_weight,
+        M,
+        K,
+        N_out,
+        x.stride(0),
+        x.stride(1),
+        grad_out.stride(0),
+        grad_out.stride(1),
+        y.stride(0),
+        y.stride(1),
+        grad_weight.stride(0),
+        grad_weight.stride(1),
         BLOCK_M=BLOCK_M,
         BLOCK_K=BLOCK_K,
         BLOCK_N=BLOCK_N,
@@ -1164,21 +1434,42 @@ def fused_tanh_backward_grad_weight_v2(x, grad_out, y, K_out, N_out):
 # V2: Layer 1 grad_x with pre-transposed weight
 @triton.autotune(
     configs=[
-        triton.Config({'BLOCK_M': 128, 'BLOCK_N': 128, 'BLOCK_K': 128}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 256, 'BLOCK_N': 128, 'BLOCK_K': 128}, num_stages=2, num_warps=8),
-        triton.Config({'BLOCK_M': 128, 'BLOCK_N': 128, 'BLOCK_K': 64}, num_stages=3, num_warps=4),
+        triton.Config(
+            {"BLOCK_M": 128, "BLOCK_N": 128, "BLOCK_K": 128},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 256, "BLOCK_N": 128, "BLOCK_K": 128},
+            num_stages=2,
+            num_warps=8,
+        ),
+        triton.Config(
+            {"BLOCK_M": 128, "BLOCK_N": 128, "BLOCK_K": 64},
+            num_stages=3,
+            num_warps=4,
+        ),
     ],
-    key=['N', 'K'],
+    key=["N", "K"],
 )
 @triton.jit
 def matmul_fp32_fp16_to_fp16_v2_kernel(
     # A: [M, K] FP32, B: [K, N] FP16 (pre-transposed), C: [M, N] FP16
-    a_ptr, b_ptr, c_ptr,
-    M, N, K,
-    stride_am, stride_ak,
-    stride_bk, stride_bn,
-    stride_cm, stride_cn,
-    BLOCK_M: tl.constexpr, BLOCK_N: tl.constexpr, BLOCK_K: tl.constexpr,
+    a_ptr,
+    b_ptr,
+    c_ptr,
+    M,
+    N,
+    K,
+    stride_am,
+    stride_ak,
+    stride_bk,
+    stride_bn,
+    stride_cm,
+    stride_cn,
+    BLOCK_M: tl.constexpr,
+    BLOCK_N: tl.constexpr,
+    BLOCK_K: tl.constexpr,
 ):
     """Standard matmul with pre-transposed B - no tl.trans needed."""
     pid_m = tl.program_id(0)
@@ -1193,11 +1484,15 @@ def matmul_fp32_fp16_to_fp16_v2_kernel(
     for k_start in range(0, K, BLOCK_K):
         k_offs = k_start + offs_k
 
-        a_ptrs = a_ptr + offs_m[:, None] * stride_am + k_offs[None, :] * stride_ak
+        a_ptrs = (
+            a_ptr + offs_m[:, None] * stride_am + k_offs[None, :] * stride_ak
+        )
         a_mask = (offs_m[:, None] < M) & (k_offs[None, :] < K)
         a_block = tl.load(a_ptrs, mask=a_mask, other=0.0).to(tl.float16)
 
-        b_ptrs = b_ptr + k_offs[:, None] * stride_bk + offs_n[None, :] * stride_bn
+        b_ptrs = (
+            b_ptr + k_offs[:, None] * stride_bk + offs_n[None, :] * stride_bn
+        )
         b_mask = (k_offs[:, None] < K) & (offs_n[None, :] < N)
         b_block = tl.load(b_ptrs, mask=b_mask, other=0.0)
 
@@ -1215,13 +1510,24 @@ def matmul_fp32_fp16_to_fp16_v2(a, b_t):
     assert K == K2
 
     c = torch.empty((M, N), device=a.device, dtype=torch.float16)
-    grid = lambda META: (triton.cdiv(M, META['BLOCK_M']), triton.cdiv(N, META['BLOCK_N']))
+    grid = lambda META: (
+        triton.cdiv(M, META["BLOCK_M"]),
+        triton.cdiv(N, META["BLOCK_N"]),
+    )
 
     matmul_fp32_fp16_to_fp16_v2_kernel[grid](
-        a, b_t, c, M, N, K,
-        a.stride(0), a.stride(1),
-        b_t.stride(0), b_t.stride(1),
-        c.stride(0), c.stride(1),
+        a,
+        b_t,
+        c,
+        M,
+        N,
+        K,
+        a.stride(0),
+        a.stride(1),
+        b_t.stride(0),
+        b_t.stride(1),
+        c.stride(0),
+        c.stride(1),
     )
     return c
 
@@ -1229,11 +1535,18 @@ def matmul_fp32_fp16_to_fp16_v2(a, b_t):
 # V2: Layer 1 persistent grad_weight
 @triton.jit
 def grad_weight_persistent_v2_kernel(
-    x_ptr, grad_out_ptr, grad_weight_ptr,
-    M, K, N,
-    stride_xm, stride_xk,
-    stride_gm, stride_gn,
-    stride_wk, stride_wn,
+    x_ptr,
+    grad_out_ptr,
+    grad_weight_ptr,
+    M,
+    K,
+    N,
+    stride_xm,
+    stride_xk,
+    stride_gm,
+    stride_gn,
+    stride_wk,
+    stride_wn,
     BLOCK_M: tl.constexpr,
     BLOCK_K: tl.constexpr,
     BLOCK_N: tl.constexpr,
@@ -1251,11 +1564,17 @@ def grad_weight_persistent_v2_kernel(
         offs_m = m_start + tl.arange(0, BLOCK_M)
         m_mask = offs_m < M
 
-        x_ptrs = x_ptr + offs_m[:, None] * stride_xm + offs_k[None, :] * stride_xk
+        x_ptrs = (
+            x_ptr + offs_m[:, None] * stride_xm + offs_k[None, :] * stride_xk
+        )
         x_mask = m_mask[:, None] & (offs_k[None, :] < K)
         x_block = tl.load(x_ptrs, mask=x_mask, other=0.0)
 
-        g_ptrs = grad_out_ptr + offs_m[:, None] * stride_gm + offs_n[None, :] * stride_gn
+        g_ptrs = (
+            grad_out_ptr
+            + offs_m[:, None] * stride_gm
+            + offs_n[None, :] * stride_gn
+        )
         g_mask = m_mask[:, None] & (offs_n[None, :] < N)
         g_block = tl.load(g_ptrs, mask=g_mask, other=0.0)
 
@@ -1263,7 +1582,11 @@ def grad_weight_persistent_v2_kernel(
         g_fp16 = g_block.to(tl.float16)
         acc += tl.dot(x_t, g_fp16)
 
-    w_ptrs = grad_weight_ptr + offs_k[:, None] * stride_wk + offs_n[None, :] * stride_wn
+    w_ptrs = (
+        grad_weight_ptr
+        + offs_k[:, None] * stride_wk
+        + offs_n[None, :] * stride_wn
+    )
     w_mask = (offs_k[:, None] < K) & (offs_n[None, :] < N)
     tl.store(w_ptrs, acc, mask=w_mask)
 
@@ -1284,11 +1607,18 @@ def grad_weight_persistent_v2(x, grad_out):
     grid = (triton.cdiv(K, BLOCK_K), triton.cdiv(N, BLOCK_N))
 
     grad_weight_persistent_v2_kernel[grid](
-        x, grad_out, grad_weight,
-        M, K, N,
-        x.stride(0), x.stride(1),
-        grad_out.stride(0), grad_out.stride(1),
-        grad_weight.stride(0), grad_weight.stride(1),
+        x,
+        grad_out,
+        grad_weight,
+        M,
+        K,
+        N,
+        x.stride(0),
+        x.stride(1),
+        grad_out.stride(0),
+        grad_out.stride(1),
+        grad_weight.stride(0),
+        grad_weight.stride(1),
         BLOCK_M=BLOCK_M,
         BLOCK_K=BLOCK_K,
         BLOCK_N=BLOCK_N,
@@ -1340,7 +1670,9 @@ class FusedLinearTanhFP16Function(torch.autograd.Function):
         if ctx.needs_input_grad[0]:
             # V2: Fused tanh backward + grad_x matmul (no intermediate tensor)
             # grad_x = (grad_out * (1-y^2)) @ weight_t
-            grad_x = fused_tanh_backward_grad_x_v2(grad_output, y_fp16, weight_t)
+            grad_x = fused_tanh_backward_grad_x_v2(
+                grad_output, y_fp16, weight_t
+            )
             # Match input dtype (kernel returns FP32)
             if ctx.input_dtype == torch.float16:
                 grad_x = grad_x.half()
@@ -1704,28 +2036,35 @@ class FusedDistanceGaussianRBFCutoffFunction(torch.autograd.Function):
 
             # d(cutoff)/d(dist) = -0.5 * pi/cutoff_upper * sin(dist * pi / cutoff_upper)
             sin_val = torch.sin(distances * pi / cutoff_upper)
-            d_cutoff_d_dist = -0.5 * (pi / cutoff_upper) * sin_val * dist_in_range
+            d_cutoff_d_dist = (
+                -0.5 * (pi / cutoff_upper) * sin_val * dist_in_range
+            )
 
             # Compute RBF and its derivative w.r.t. distance
             # rbf = exp(gamma * (dist - center)^2) * cutoff
             # d(rbf)/d(dist) = [2*gamma*(dist-center)*exp(...)*cutoff + exp(...)*d_cutoff]
-            diff = distances.unsqueeze(-1) - centers.unsqueeze(0)  # [num_edges, num_rbf]
-            exp_term = torch.exp(gamma * diff ** 2)
+            diff = distances.unsqueeze(-1) - centers.unsqueeze(
+                0
+            )  # [num_edges, num_rbf]
+            exp_term = torch.exp(gamma * diff**2)
 
             # Chain rule for rbf gradient
-            d_rbf_d_dist = (
-                2 * gamma * diff * exp_term * cutoff_val.unsqueeze(-1)
-                + exp_term * d_cutoff_d_dist.unsqueeze(-1)
-            )
+            d_rbf_d_dist = 2 * gamma * diff * exp_term * cutoff_val.unsqueeze(
+                -1
+            ) + exp_term * d_cutoff_d_dist.unsqueeze(-1)
 
             # Aggregate gradient from all RBF channels
-            grad_dist_from_rbf = (grad_rbf * d_rbf_d_dist).sum(dim=-1)  # [num_edges]
+            grad_dist_from_rbf = (grad_rbf * d_rbf_d_dist).sum(
+                dim=-1
+            )  # [num_edges]
 
             # Total gradient w.r.t. distance
             total_grad_dist = grad_distances + grad_dist_from_rbf
 
             # Convert to position gradients
-            grad_dr = total_grad_dist.unsqueeze(-1) * direction  # [num_edges, 3]
+            grad_dr = (
+                total_grad_dist.unsqueeze(-1) * direction
+            )  # [num_edges, 3]
 
             # Scatter gradients to positions
             grad_pos = torch.zeros_like(pos)
@@ -1757,28 +2096,60 @@ def fused_distance_gaussian_rbf_cutoff_autograd(
 
 @triton.autotune(
     configs=[
-        triton.Config({'BLOCK_M': 32, 'BLOCK_N': 64, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 64, 'BLOCK_N': 64, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 32, 'BLOCK_N': 128, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 64, 'BLOCK_N': 128, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 128, 'BLOCK_N': 64, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
-        triton.Config({'BLOCK_M': 128, 'BLOCK_N': 128, 'BLOCK_K': 32}, num_stages=2, num_warps=4),
+        triton.Config(
+            {"BLOCK_M": 32, "BLOCK_N": 64, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 64, "BLOCK_N": 64, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 32, "BLOCK_N": 128, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 64, "BLOCK_N": 128, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 128, "BLOCK_N": 64, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
+        triton.Config(
+            {"BLOCK_M": 128, "BLOCK_N": 128, "BLOCK_K": 32},
+            num_stages=2,
+            num_warps=4,
+        ),
     ],
-    key=['N', 'K'],  # NOT M! M varies per step, would trigger autotune ~1500ms each
+    key=[
+        "N",
+        "K",
+    ],  # NOT M! M varies per step, would trigger autotune ~1500ms each
 )
 @triton.jit
 def fused_tanh_linear_kernel(
     # Pointers
-    x_ptr,      # Input [M, K]
-    w_ptr,      # Weight [K, N]
-    b_ptr,      # Bias [N] or None
-    y_ptr,      # Output [M, N]
+    x_ptr,  # Input [M, K]
+    w_ptr,  # Weight [K, N]
+    b_ptr,  # Bias [N] or None
+    y_ptr,  # Output [M, N]
     # Dimensions
-    M, N, K,
+    M,
+    N,
+    K,
     # Strides
-    stride_xm, stride_xk,
-    stride_wk, stride_wn,
-    stride_ym, stride_yn,
+    stride_xm,
+    stride_xk,
+    stride_wk,
+    stride_wn,
+    stride_ym,
+    stride_yn,
     # Meta-parameters
     HAS_BIAS: tl.constexpr,
     BLOCK_M: tl.constexpr,
@@ -1817,7 +2188,9 @@ def fused_tanh_linear_kernel(
         k_offs = k_start + offs_k
 
         # load X block [BLOCK_M, BLOCK_K]
-        x_ptrs = x_ptr + offs_m[:, None] * stride_xm + k_offs[None, :] * stride_xk
+        x_ptrs = (
+            x_ptr + offs_m[:, None] * stride_xm + k_offs[None, :] * stride_xk
+        )
         x_mask = (offs_m[:, None] < M) & (k_offs[None, :] < K)
         x_block = tl.load(x_ptrs, mask=x_mask, other=0.0)
 
@@ -1825,7 +2198,9 @@ def fused_tanh_linear_kernel(
         x_block = _triton_tanh(x_block)
 
         # load W block [BLOCK_K, BLOCK_N]
-        w_ptrs = w_ptr + k_offs[:, None] * stride_wk + offs_n[None, :] * stride_wn
+        w_ptrs = (
+            w_ptr + k_offs[:, None] * stride_wk + offs_n[None, :] * stride_wn
+        )
         w_mask = (k_offs[:, None] < K) & (offs_n[None, :] < N)
         w_block = tl.load(w_ptrs, mask=w_mask, other=0.0)
 
@@ -1844,9 +2219,7 @@ def fused_tanh_linear_kernel(
 
 
 def fused_tanh_linear(
-    x: torch.Tensor,
-    weight: torch.Tensor,
-    bias: torch.Tensor = None
+    x: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor = None
 ) -> torch.Tensor:
     """
     Compute Y = tanh(X) @ W + b using fused Triton kernel.
@@ -1872,7 +2245,9 @@ def fused_tanh_linear(
 
     M, K = x.shape
     K2, N = weight.shape
-    assert K == K2, f"Dimension mismatch: x has {K} columns but weight has {K2} rows"
+    assert K == K2, (
+        f"Dimension mismatch: x has {K} columns but weight has {K2} rows"
+    )
 
     # allocate output
     y = torch.empty((M, N), device=x.device, dtype=x.dtype)
@@ -1880,18 +2255,25 @@ def fused_tanh_linear(
     # grid
     def grid(META):
         return (
-            triton.cdiv(M, META['BLOCK_M']),
-            triton.cdiv(N, META['BLOCK_N']),
+            triton.cdiv(M, META["BLOCK_M"]),
+            triton.cdiv(N, META["BLOCK_N"]),
         )
 
     # launch kernel
     fused_tanh_linear_kernel[grid](
-        x, weight, bias if bias is not None else x,
+        x,
+        weight,
+        bias if bias is not None else x,
         y,
-        M, N, K,
-        x.stride(0), x.stride(1),
-        weight.stride(0), weight.stride(1),
-        y.stride(0), y.stride(1),
+        M,
+        N,
+        K,
+        x.stride(0),
+        x.stride(1),
+        weight.stride(0),
+        weight.stride(1),
+        y.stride(0),
+        y.stride(1),
         HAS_BIAS=(bias is not None),
     )
 
@@ -1942,9 +2324,7 @@ class FusedTanhLinearFunction(torch.autograd.Function):
 
 
 def fused_tanh_linear_autograd(
-    x: torch.Tensor,
-    weight: torch.Tensor,
-    bias: torch.Tensor = None
+    x: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor = None
 ) -> torch.Tensor:
     """Autograd-compatible fused tanh + linear.
 

@@ -3,15 +3,18 @@ pygs (Pytorch Geometric) and make them compatible with a newer version
 in use.
 """
 
+from collections.abc import Iterable
 from contextlib import contextmanager
 from typing import Mapping, Type
-from collections.abc import Iterable
 import warnings
 
 import torch
+
+from flashmd.models.gradients import GradientsOut
+from flashmd.models.gradients import SumOut
 import flashmd.models.schnet
-from flashmd.models.schnet import CFConv, SchNet
-from flashmd.models.gradients import SumOut, GradientsOut
+from flashmd.models.schnet import CFConv
+from flashmd.models.schnet import SchNet
 
 
 def get_refreshed_cfconv_layer(old_cfconv: CFConv):
@@ -77,9 +80,7 @@ def _is_sumout_like(obj):
 
 def _is_gradientsout_like(obj):
     """Check if obj is GradientsOut or mlcg equivalent."""
-    return isinstance(obj, GradientsOut) or type(
-        obj
-    ).__name__ == "GradientsOut"
+    return isinstance(obj, GradientsOut) or type(obj).__name__ == "GradientsOut"
 
 
 def _search_for_model(
@@ -152,8 +153,7 @@ def refresh_module_(
                 ib.conv = get_refreshed_cfconv_layer(ib.conv)
         else:
             raise NotImplementedError(
-                f"refresh_module only supports SchNet, "
-                f"but got {model_type}"
+                f"refresh_module only supports SchNet, but got {model_type}"
             )
     return model_containing
 
@@ -166,8 +166,9 @@ def fixed_pyg_inspector():
     since pyg v2.6.0
     """
     import sys
-    import torch_geometric
+
     from packaging import version
+    import torch_geometric
 
     monkey_patched = False
     try:

@@ -1,13 +1,13 @@
 from .base import _Prior
-from .harmonic import (
-    Harmonic,
-    HarmonicAngles,
-    HarmonicImpropers,
-    HarmonicBonds,
-    GeneralAngles,
-    GeneralBonds,
-)
+from .fourier_series import Dihedral
+from .fourier_series import FourierSeries
+from .harmonic import GeneralAngles
+from .harmonic import GeneralBonds
+from .harmonic import Harmonic
+from .harmonic import HarmonicAngles
+from .harmonic import HarmonicBonds
+from .harmonic import HarmonicImpropers
+from .polynomial import Polynomial
+from .polynomial import QuarticAngles
 from .repulsion import Repulsion
-from .fourier_series import FourierSeries, Dihedral
-from .polynomial import Polynomial, QuarticAngles
 from .restricted_bending import RestrictedQuartic

@@ -1,21 +1,20 @@
+from typing import Any, Dict, Optional
+
 import torch
 from torch_geometric.data import Data
-from typing import Optional, Dict, Any
 
-from ._keys import (
-    validate_keys,
-    POSITIONS_KEY,
-    N_ATOMS_KEY,
-    CELL_KEY,
-    PBC_KEY,
-    ATOM_TYPE_KEY,
-    NEIGHBOR_LIST_KEY,
-    TAG_KEY,
-    ENERGY_KEY,
-    FORCE_KEY,
-    MASS_KEY,
-    VELOCITY_KEY,
-)
+from ._keys import ATOM_TYPE_KEY
+from ._keys import CELL_KEY
+from ._keys import ENERGY_KEY
+from ._keys import FORCE_KEY
+from ._keys import MASS_KEY
+from ._keys import N_ATOMS_KEY
+from ._keys import NEIGHBOR_LIST_KEY
+from ._keys import PBC_KEY
+from ._keys import POSITIONS_KEY
+from ._keys import TAG_KEY
+from ._keys import VELOCITY_KEY
+from ._keys import validate_keys
 
 
 class AtomicData(Data):
@@ -65,9 +64,9 @@ class AtomicData(Data):
 
         # check the sanity of the inputs
         if N_ATOMS_KEY in self and POSITIONS_KEY in self:
-            assert (
-                torch.sum(self.n_atoms) == self.pos.shape[0]
-            ), f"number of atoms {torch.sum(self.n_atoms)} and number of positions {self.pos.shape[0]}"
+            assert torch.sum(self.n_atoms) == self.pos.shape[0], (
+                f"number of atoms {torch.sum(self.n_atoms)} and number of positions {self.pos.shape[0]}"
+            )
 
             assert self.pos.shape[1] == 3
         if MASS_KEY in self and POSITIONS_KEY in self:
@@ -88,9 +87,9 @@ class AtomicData(Data):
             assert self[ENERGY_KEY].dtype == self[POSITIONS_KEY].dtype
         if PBC_KEY in self and self.pbc is not None:
             assert self.pbc.dim() == 2, f"dim {self.pbc.dim()}"
-            assert self.pbc.shape[1:] == torch.Size(
-                [3]
-            ), f"shape {self.pbc.shape[1:]}"
+            assert self.pbc.shape[1:] == torch.Size([3]), (
+                f"shape {self.pbc.shape[1:]}"
+            )
             assert self.pbc.dtype == torch.bool
 
     def __inc__(self, key: str, value: Any, *args, **kwargs) -> Any:

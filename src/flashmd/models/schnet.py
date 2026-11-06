@@ -1,19 +1,20 @@
 import logging
 import os
+from typing import Final, List, Optional
 import warnings
-from typing import Optional, List, Final
-import torch
+
 import nvtx
+import torch
 from torch_geometric.nn import MessagePassing
 from torch_geometric.utils import scatter
-from ..neighbor_list.neighbor_list import (
-    atomic_data2neighbor_list,
-    validate_neighborlist,
-)
-from ..data.atomic_data import AtomicData, ENERGY_KEY
+
+from ..data.atomic_data import ENERGY_KEY
+from ..data.atomic_data import AtomicData
 from ..geometry.internal_coordinates import compute_distances
-from .mlp import MLP
+from ..neighbor_list.neighbor_list import atomic_data2neighbor_list
+from ..neighbor_list.neighbor_list import validate_neighborlist
 from ._module_init import init_xavier_uniform
+from .mlp import MLP
 
 logger = logging.getLogger(__name__)
 
@@ -28,14 +29,14 @@ except ImportError:
 try:
     from flashmd.kernels.cfconv_kernels import (
         fused_cutoff_gather_multiply_scatter_autograd,
+    )
+    from flashmd.kernels.cfconv_kernels import (
         fused_distance_gaussian_rbf_cutoff_autograd,
-        fused_tanh_linear_autograd,
     )
-    from flashmd.kernels.csr_kernels import (
-        build_csr_index,
-        build_src_csr_index,
-        fused_csr_cfconv_autograd,
-    )
+    from flashmd.kernels.cfconv_kernels import fused_tanh_linear_autograd
+    from flashmd.kernels.csr_kernels import build_csr_index
+    from flashmd.kernels.csr_kernels import build_src_csr_index
+    from flashmd.kernels.csr_kernels import fused_csr_cfconv_autograd
 
     TRITON_AVAILABLE = True
 except ImportError:
@@ -49,7 +50,9 @@ except ImportError:
 
 # All Triton optimizations are ON by default. Use --disable_optim CLI flag
 # or set individual env vars to "0" to disable.
-USE_TRITON_MESSAGE_PASSING = os.environ.get("MLCG_USE_TRITON_MESSAGE_PASSING", "1") == "1"
+USE_TRITON_MESSAGE_PASSING = (
+    os.environ.get("MLCG_USE_TRITON_MESSAGE_PASSING", "1") == "1"
+)
 USE_FUSED_RBF = os.environ.get("MLCG_USE_FUSED_RBF", "1")
 USE_FUSED_TANH_LINEAR = os.environ.get("MLCG_USE_FUSED_TANH_LINEAR", "1") == "1"
 USE_CSR = os.environ.get("MLCG_USE_CSR", "1") == "1"
@@ -191,20 +194,30 @@ class SchNet(torch.nn.Module):
            (num_examples * num_atoms, 1), as well as neighbor list
            information.
         """
-        logger = getattr(data, '_shape_logger', None)
+        logger = getattr(data, "_shape_logger", None)
         if logger:
-            logger.write(f"      [SchNet.forward] Neural network forward pass:\n")
-            logger.write(f"        Input:\n")
-            logger.write(f"          data.pos: shape={list(data.pos.shape)}, dtype={data.pos.dtype}\n")
-            logger.write(f"          data.atom_types: shape={list(data.atom_types.shape)}\n")
-            logger.write(f"          data.batch: shape={list(data.batch.shape)}\n")
+            logger.write(
+                "      [SchNet.forward] Neural network forward pass:\n"
+            )
+            logger.write("        Input:\n")
+            logger.write(
+                f"          data.pos: shape={list(data.pos.shape)}, dtype={data.pos.dtype}\n"
+            )
+            logger.write(
+                f"          data.atom_types: shape={list(data.atom_types.shape)}\n"
+            )
+            logger.write(
+                f"          data.batch: shape={list(data.batch.shape)}\n"
+            )
 
         with nvtx.annotate("SchNet_embedding", color="yellow"):
             x = self.embedding_layer(data.atom_types)
 
         if logger:
-            logger.write(f"        Embedding:\n")
-            logger.write(f"          x (embedded): shape={list(x.shape)}, dtype={x.dtype}\n")
+            logger.write("        Embedding:\n")
+            logger.write(
+                f"          x (embedded): shape={list(x.shape)}, dtype={x.dtype}\n"
+            )
 
         neighbor_list = data.neighbor_list.get(self.name)
 
@@ -231,7 +244,9 @@ class SchNet(torch.nn.Module):
                     )[self.name]
 
         if use_custom_kernel:
-            with nvtx.annotate("SchNet_radius_distance_kernel", color="magenta"):
+            with nvtx.annotate(
+                "SchNet_radius_distance_kernel", color="magenta"
+            ):
                 distances, edge_index = radius_distance(
                     data.pos,
                     self.rbf_layer.cutoff.cutoff_upper,
@@ -242,9 +257,13 @@ class SchNet(torch.nn.Module):
                 )
 
             if logger:
-                logger.write(f"        Neighbor List / Distances:\n")
-                logger.write(f"          edge_index: shape={list(edge_index.shape)}, n_edges={edge_index.shape[1]}\n")
-                logger.write(f"          distances: shape={list(distances.shape)}\n")
+                logger.write("        Neighbor List / Distances:\n")
+                logger.write(
+                    f"          edge_index: shape={list(edge_index.shape)}, n_edges={edge_index.shape[1]}\n"
+                )
+                logger.write(
+                    f"          distances: shape={list(distances.shape)}\n"
+                )
 
             with nvtx.annotate("SchNet_rbf_expansion", color="green"):
                 rbf_expansion = self.rbf_layer(distances)
@@ -260,7 +279,9 @@ class SchNet(torch.nn.Module):
 
             if should_use_fused_rbf:
                 # Fused kernel: computes distances + Gaussian RBF + cosine cutoff
-                with nvtx.annotate("SchNet_fused_distance_rbf_cutoff", color="green"):
+                with nvtx.annotate(
+                    "SchNet_fused_distance_rbf_cutoff", color="green"
+                ):
                     edge_src = edge_index[0].contiguous()
                     edge_dst = edge_index[1].contiguous()
                     pos_contiguous = data.pos.contiguous()
@@ -273,17 +294,21 @@ class SchNet(torch.nn.Module):
                     gamma = self._cached_gamma
                     cutoff_upper = self.rbf_layer.cutoff.cutoff_upper
 
-                    distances, rbf_expansion = fused_distance_gaussian_rbf_cutoff_autograd(
-                        pos_contiguous,
-                        edge_src,
-                        edge_dst,
-                        centers,
-                        gamma,
-                        cutoff_upper,
+                    distances, rbf_expansion = (
+                        fused_distance_gaussian_rbf_cutoff_autograd(
+                            pos_contiguous,
+                            edge_src,
+                            edge_dst,
+                            centers,
+                            gamma,
+                            cutoff_upper,
+                        )
                     )
             else:
                 # Standard path: separate distance computation and RBF expansion
-                with nvtx.annotate("SchNet_compute_distances_standard", color="orange"):
+                with nvtx.annotate(
+                    "SchNet_compute_distances_standard", color="orange"
+                ):
                     distances = compute_distances(
                         data.pos,
                         edge_index,
@@ -291,26 +316,39 @@ class SchNet(torch.nn.Module):
                     )
 
                 if logger:
-                    logger.write(f"        Neighbor List / Distances:\n")
-                    logger.write(f"          edge_index: shape={list(edge_index.shape)}, n_edges={edge_index.shape[1]}\n")
-                    logger.write(f"          distances: shape={list(distances.shape)}\n")
+                    logger.write("        Neighbor List / Distances:\n")
+                    logger.write(
+                        f"          edge_index: shape={list(edge_index.shape)}, n_edges={edge_index.shape[1]}\n"
+                    )
+                    logger.write(
+                        f"          distances: shape={list(distances.shape)}\n"
+                    )
 
                 with nvtx.annotate("SchNet_rbf_expansion", color="green"):
                     rbf_expansion = self.rbf_layer(distances)
 
         if logger:
-            logger.write(f"        RBF Expansion:\n")
-            logger.write(f"          rbf_expansion: shape={list(rbf_expansion.shape)}\n")
+            logger.write("        RBF Expansion:\n")
+            logger.write(
+                f"          rbf_expansion: shape={list(rbf_expansion.shape)}\n"
+            )
 
         num_batch = data.batch[-1] + 1
         if logger:
-            logger.write(f"        Interaction Blocks (num_blocks={len(self.interaction_blocks)}):\n")
+            logger.write(
+                f"        Interaction Blocks (num_blocks={len(self.interaction_blocks)}):\n"
+            )
 
         # Build CSR index if enabled (once, reused across all interaction blocks)
         csr_data = None
         need_dst_csr = USE_CSR
         need_src_csr = USE_SRC_CSR_GRAD_X
-        if (need_dst_csr or need_src_csr) and TRITON_AVAILABLE and build_csr_index is not None and x.is_cuda:
+        if (
+            (need_dst_csr or need_src_csr)
+            and TRITON_AVAILABLE
+            and build_csr_index is not None
+            and x.is_cuda
+        ):
             with nvtx.annotate("SchNet_build_csr", color="magenta"):
                 edge_src = edge_index[0].contiguous()
                 edge_dst = edge_index[1].contiguous()
@@ -336,34 +374,47 @@ class SchNet(torch.nn.Module):
         for i, block in enumerate(self.interaction_blocks):
             with nvtx.annotate(f"SchNet_interaction_block_{i}", color="cyan"):
                 x = x + block(
-                    x, edge_index, distances, rbf_expansion, num_batch, data.batch,
-                    csr_data=csr_data
+                    x,
+                    edge_index,
+                    distances,
+                    rbf_expansion,
+                    num_batch,
+                    data.batch,
+                    csr_data=csr_data,
                 )
             if logger:
-                logger.write(f"          block_{i} output x: shape={list(x.shape)}\n")
+                logger.write(
+                    f"          block_{i} output x: shape={list(x.shape)}\n"
+                )
 
         with nvtx.annotate("SchNet_output_network", color="purple"):
             energy = self.output_network(x, data)
 
         if logger:
-            logger.write(f"        Output Network:\n")
-            logger.write(f"          energy (per atom): shape={list(energy.shape)}\n")
+            logger.write("        Output Network:\n")
+            logger.write(
+                f"          energy (per atom): shape={list(energy.shape)}\n"
+            )
 
         with nvtx.annotate("SchNet_scatter_reduce", color="gray"):
             # Use data.ptr to get num_graphs without GPU-CPU sync
             # This avoids the Tensor.item() graph break in scatter
-            num_graphs = data.ptr.numel() - 1 if hasattr(data, 'ptr') else None
-            energy = scatter(energy, data.batch, dim=0, reduce="sum", dim_size=num_graphs)
+            num_graphs = data.ptr.numel() - 1 if hasattr(data, "ptr") else None
+            energy = scatter(
+                energy, data.batch, dim=0, reduce="sum", dim_size=num_graphs
+            )
             energy = energy.flatten()
 
         if logger:
-            logger.write(f"        Scatter Reduce:\n")
-            logger.write(f"          energy (per structure): shape={list(energy.shape)}\n")
+            logger.write("        Scatter Reduce:\n")
+            logger.write(
+                f"          energy (per structure): shape={list(energy.shape)}\n"
+            )
 
         data.out[self.name] = {ENERGY_KEY: energy}
 
         # Store edge_index if dump_neighbor_list flag is set
-        if getattr(data, '_dump_neighbor_list', False):
+        if getattr(data, "_dump_neighbor_list", False):
             data.out[self.name]["edge_index"] = edge_index
 
         return data
@@ -412,12 +463,15 @@ class SchNet(torch.nn.Module):
             return False
 
         # Check rbf_layer compatibility (must be GaussianBasis)
-        if not hasattr(self.rbf_layer, 'offset') or not hasattr(self.rbf_layer, 'coeff'):
+        if not hasattr(self.rbf_layer, "offset") or not hasattr(
+            self.rbf_layer, "coeff"
+        ):
             return False
 
         # Check cutoff compatibility (must be CosineCutoff with cutoff_lower=0)
         # Import here to avoid circular imports
         from .cutoff import CosineCutoff
+
         cutoff = self.rbf_layer.cutoff
         if not isinstance(cutoff, CosineCutoff):
             return False
@@ -529,12 +583,16 @@ class InteractionBlock(torch.nn.Module):
         """
 
         with nvtx.annotate("InteractionBlock_cfconv", color="lime"):
-            x = self.conv(x, edge_index, edge_weight, edge_attr, csr_data=csr_data)
+            x = self.conv(
+                x, edge_index, edge_weight, edge_attr, csr_data=csr_data
+            )
 
         if self.use_fused_tanh_linear and x.is_cuda:
             # Fused path: tanh + linear in single kernel
             # y = tanh(x) @ W.T + b  (Linear stores weight as [out, in])
-            with nvtx.annotate("InteractionBlock_fused_tanh_linear", color="olive"):
+            with nvtx.annotate(
+                "InteractionBlock_fused_tanh_linear", color="olive"
+            ):
                 # Linear layer weight is [out_features, in_features], need to transpose
                 weight = self.lin.weight.t().contiguous()
                 bias = self.lin.bias
@@ -585,7 +643,9 @@ class CFConv(MessagePassing):
         self.lin2 = torch.nn.Linear(num_filters, out_channels)
         self.filter_network = filter_network
         self.cutoff = cutoff
-        self.use_triton = use_triton and TRITON_AVAILABLE and USE_TRITON_MESSAGE_PASSING
+        self.use_triton = (
+            use_triton and TRITON_AVAILABLE and USE_TRITON_MESSAGE_PASSING
+        )
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -645,7 +705,11 @@ class CFConv(MessagePassing):
 
         # Step 2-5: Message passing (propagate_type: x: Tensor, W: Tensor)
         with nvtx.annotate("CFConv_message_passing", color="crimson"):
-            if csr_data is not None and "dst_ptr" in csr_data and fused_csr_cfconv_autograd is not None:
+            if (
+                csr_data is not None
+                and "dst_ptr" in csr_data
+                and fused_csr_cfconv_autograd is not None
+            ):
                 # === CSR Segment Reduce Path ===
                 # Uses CSR format to avoid atomics in scatter-add
                 num_nodes = x.shape[0]
@@ -683,7 +747,9 @@ class CFConv(MessagePassing):
 
                 # Step 2a: Filter network (MLP, not fused)
                 with nvtx.annotate("CFConv_filter_network", color="salmon"):
-                    filter_out = self.filter_network(edge_attr)  # [num_edges, num_filters]
+                    filter_out = self.filter_network(
+                        edge_attr
+                    )  # [num_edges, num_filters]
 
                 # Steps 2b-5 FUSED: cutoff * filter_out * x[src] -> scatter_add to dst
                 cutoff_upper = self.cutoff.cutoff_upper
@@ -710,9 +776,13 @@ class CFConv(MessagePassing):
                     C = self.cutoff(edge_weight)  # [num_edges]
                 # Step 2b: Filter network + apply cutoff
                 with nvtx.annotate("CFConv_filter_network", color="salmon"):
-                    W = self.filter_network(edge_attr) * C.view(-1, 1)  # [num_edges, num_filters]
+                    W = self.filter_network(edge_attr) * C.view(
+                        -1, 1
+                    )  # [num_edges, num_filters]
                 # Steps 3-5: Message passing (gather x[src], multiply by W, scatter_add to dst)
-                x = self.propagate(edge_index, x=x, W=W, size=None)  # calls message() then aggregates
+                x = self.propagate(
+                    edge_index, x=x, W=W, size=None
+                )  # calls message() then aggregates
 
         # Step 6: Final linear projection
         with nvtx.annotate("CFConv_lin2", color="coral"):
@@ -839,5 +909,3 @@ class StandardSchNet(SchNet):
             output_network,
             max_num_neighbors=max_num_neighbors,
         )
-
-

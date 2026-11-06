@@ -1,14 +1,14 @@
 from __future__ import annotations
+
+from typing import Dict, Final, Optional
+
 import numpy as np
 import torch
-from typing import Final, Optional, Dict
 from torch_geometric.utils import scatter
 
-from .base import _Prior
 from ..data.atomic_data import AtomicData
-from ..geometry.internal_coordinates import (
-    compute_distances,
-)
+from ..geometry.internal_coordinates import compute_distances
+from .base import _Prior
 
 
 class Repulsion(_Prior):
@@ -106,7 +106,7 @@ class Repulsion(_Prior):
         features = self.data2features(data)
         y = Repulsion.compute(features, self.sigma[interaction_types])
         # Use data.ptr to avoid GPU-CPU sync in scatter
-        num_graphs = data.ptr.numel() - 1 if hasattr(data, 'ptr') else None
+        num_graphs = data.ptr.numel() - 1 if hasattr(data, "ptr") else None
         y = scatter(y, mapping_batch, dim=0, reduce="sum", dim_size=num_graphs)
         data.out[self.name] = {"energy": y}
         return data

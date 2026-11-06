@@ -1,7 +1,10 @@
-from typing import Tuple, Optional
+from typing import Optional, Tuple
+
 import torch
+from torch_cluster import radius
+from torch_cluster import radius_graph
 from torch_geometric.data import Data
-from torch_cluster import radius, radius_graph
+
 from ..data.atomic_data import AtomicData
 
 
@@ -70,7 +73,7 @@ def torch_neighbor_list(
     if torch.any(pbc):
         if "cell" not in data:
             raise ValueError(
-                f"Periodic systems need to have a unit cell defined"
+                "Periodic systems need to have a unit cell defined"
             )
         (
             idx_i,
@@ -345,9 +348,9 @@ def wrap_positions(data: Data, eps: float = 1e-7) -> None:
     """
 
     center = torch.tensor((0.5, 0.5, 0.5)).view(1, 3)
-    assert (
-        data.n_atoms.shape[0] == 1
-    ), f"There should be only one structure, found: {data.n_atoms.shape[0]}"
+    assert data.n_atoms.shape[0] == 1, (
+        f"There should be only one structure, found: {data.n_atoms.shape[0]}"
+    )
 
     pbc = data.pbc.view(1, 3)
     shift = center - 0.5 - eps

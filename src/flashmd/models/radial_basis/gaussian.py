@@ -1,9 +1,11 @@
-import torch
-from torch import nn
 from typing import Union
 
+import torch
+from torch import nn
+
+from ..cutoff import IdentityCutoff
+from ..cutoff import _Cutoff
 from .base import _RadialBasis
-from ..cutoff import _Cutoff, IdentityCutoff
 
 
 class GaussianBasis(_RadialBasis):

@@ -1,8 +1,10 @@
-import torch
-import pytest
 import numpy as np
+import pytest
+import torch
 
-from flashmd.models.cutoff import IdentityCutoff, CosineCutoff, ShiftedCosineCutoff
+from flashmd.models.cutoff import CosineCutoff
+from flashmd.models.cutoff import IdentityCutoff
+from flashmd.models.cutoff import ShiftedCosineCutoff
 
 data = torch.randn(100, 3)
 linear_data = torch.linspace(0, 10, 100)
