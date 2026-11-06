@@ -338,7 +338,7 @@ def fused_src_csr_grad_x_kernel(
 
     Key features:
     - One block per SOURCE node (no atomics!)
-    - 4 warps covering 128 features (BLOCK_F=128)
+    - 4 warps per 128-wide feature block, looping over blocks
     - FP32 accumulation in registers
     - Single store to grad_x per source node
     - Supports FP16 filter_out (loads FP16, promotes to FP32)
@@ -356,57 +356,49 @@ def fused_src_csr_grad_x_kernel(
 
     pi = 3.141592653589793
 
-    # Process all features in one block (BLOCK_F=128 covers all 128 features)
-    f_offsets = tl.arange(0, BLOCK_F)
-    f_mask = f_offsets < feature_dim
+    # Loop over feature blocks. A single 128-wide block (the original code)
+    # left features beyond 128 with zero gradient.
+    for f_start in range(0, feature_dim, BLOCK_F):
+        f_offsets = f_start + tl.arange(0, BLOCK_F)
+        f_mask = f_offsets < feature_dim
 
-    # Accumulate in FP32 registers (no atomics!)
-    acc = tl.zeros([BLOCK_F], dtype=tl.float32)
+        # Accumulate in FP32 registers (no atomics!)
+        acc = tl.zeros([BLOCK_F], dtype=tl.float32)
 
-    # Loop over all edges originating from this source node
-    for e_csr in range(seg_start, seg_end):
-        # Get original edge index via src-CSR permutation
-        edge_idx = tl.load(src_perm_ptr + e_csr)
+        # Loop over all edges originating from this source node
+        for e_csr in range(seg_start, seg_end):
+            edge_idx = tl.load(src_perm_ptr + e_csr)
+            dst_node = tl.load(edge_dst_ptr + edge_idx)
 
-        # Load destination node index
-        dst_node = tl.load(edge_dst_ptr + edge_idx)
+            # Distance and cosine cutoff
+            dist = tl.load(edge_weight_ptr + edge_idx)
+            cos_val = tl.cos(dist * pi / cutoff_upper)
+            C = 0.5 * (cos_val + 1.0)
+            C = tl.where(dist < cutoff_upper, C, 0.0)
 
-        # Load distance and compute cutoff
-        dist = tl.load(edge_weight_ptr + edge_idx)
-        cos_val = tl.cos(dist * pi / cutoff_upper)
-        C = 0.5 * (cos_val + 1.0)
-        mask_dist = dist < cutoff_upper
-        C = tl.where(mask_dist, C, 0.0)
+            filter_val = tl.load(
+                filter_out_ptr + edge_idx * feature_dim + f_offsets,
+                mask=f_mask,
+                other=0.0,
+            )
+            if FILTER_FP16:
+                filter_val = filter_val.to(tl.float32)
 
-        # Load filter output (FP16 or FP32)
-        filter_val = tl.load(
-            filter_out_ptr + edge_idx * feature_dim + f_offsets,
+            grad_dst = tl.load(
+                grad_output_ptr + dst_node * feature_dim + f_offsets,
+                mask=f_mask,
+                other=0.0,
+            )
+
+            # grad_x[src] += grad_output[dst] * filter_out * C
+            acc += grad_dst * (filter_val * C)
+
+        # Single store per source node and feature block, no atomics
+        tl.store(
+            grad_x_ptr + src_node * feature_dim + f_offsets,
+            acc,
             mask=f_mask,
-            other=0.0,
         )
-        # Promote FP16 to FP32 for computation
-        if FILTER_FP16:
-            filter_val = filter_val.to(tl.float32)
-
-        # Apply cutoff: W = filter_out * cutoff
-        W = filter_val * C
-
-        # Gather grad_output[dst]
-        grad_dst = tl.load(
-            grad_output_ptr + dst_node * feature_dim + f_offsets,
-            mask=f_mask,
-            other=0.0,
-        )
-
-        # Accumulate: grad_x[src] += grad_output[dst] * W
-        acc += grad_dst * W
-
-    # Single store per source node - no atomic needed!
-    tl.store(
-        grad_x_ptr + src_node * feature_dim + f_offsets,
-        acc,
-        mask=f_mask,
-    )
 
 
 def fused_src_csr_grad_x(
@@ -469,8 +461,8 @@ def fused_src_csr_grad_x(
     if num_edges == 0:
         return grad_x
 
-    # Block size covers all 128 features (4 warps x 32 threads)
-    BLOCK_F = 128
+    # Feature block size; the kernel loops over blocks for wider layers.
+    BLOCK_F = min(128, triton.next_power_of_2(feature_dim))
 
     # Auto-detect filter_out dtype
     filter_fp16 = filter_out.dtype == torch.float16
@@ -952,10 +944,24 @@ class FusedCSRCFConvFunction(torch.autograd.Function):
                 out_dtype=filter_out_dtype,
             )
 
+        grad_edge_weight = None
+        if ctx.needs_input_grad[2]:
+            from flashmd.kernels.cfconv_kernels import cfconv_edge_weight_grad
+
+            grad_edge_weight = cfconv_edge_weight_grad(
+                x,
+                grad_output,
+                filter_out,
+                edge_weight,
+                edge_src,
+                edge_dst,
+                cutoff_upper,
+            )
+
         return (
             grad_x,
             grad_filter_out,
-            None,
+            grad_edge_weight,
             None,
             None,
             None,

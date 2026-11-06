@@ -340,6 +340,53 @@ def fused_grad_filter_out(
     return grad_filter_out
 
 
+def cfconv_edge_weight_grad(
+    x: torch.Tensor,
+    grad_output: torch.Tensor,
+    filter_out: torch.Tensor,
+    edge_weight: torch.Tensor,
+    edge_src: torch.Tensor,
+    edge_dst: torch.Tensor,
+    cutoff_upper: float,
+) -> torch.Tensor:
+    """Gradient of the fused CFConv output with respect to edge distances.
+
+    The fused kernels compute out[dst] += x[src] * W * C(r) with the cosine
+    envelope C folded into the message, so autograd cannot see C. Its
+    derivative reaches the forces only through this term:
+
+        dL/dr_e = C'(r_e) * sum_f x[src_e, f] * grad_output[dst_e, f] * W[e, f]
+
+    with C(r) = (cos(pi r / r_c) + 1) / 2 for r < r_c and 0 beyond.
+
+    Args:
+        x: Float tensor of shape [N, F], node features entering the conv.
+        grad_output: Float tensor of shape [N, F], gradient of the output.
+        filter_out: Tensor of shape [E, F], filter network output (FP32 or
+            FP16).
+        edge_weight: Float tensor of shape [E], edge distances.
+        edge_src: Long tensor of shape [E], source node of each edge.
+        edge_dst: Long tensor of shape [E], destination node of each edge.
+        cutoff_upper: Upper cutoff r_c of the cosine envelope.
+
+    Returns:
+        Tensor of shape [E] with the dtype of `edge_weight`.
+    """
+    message = x.index_select(0, edge_src).to(torch.float32)
+    message.mul_(grad_output.index_select(0, edge_dst))
+    message.mul_(filter_out)
+    weight = message.sum(dim=-1)
+    del message
+    r = edge_weight.to(torch.float32)
+    d_cutoff = (
+        -0.5
+        * (math.pi / cutoff_upper)
+        * torch.sin(r * (math.pi / cutoff_upper))
+        * (r < cutoff_upper)
+    )
+    return (weight * d_cutoff).to(edge_weight.dtype)
+
+
 class FusedCutoffGatherMultiplyScatterFunction(torch.autograd.Function):
     """Autograd function for fused cutoff + gather + multiply + scatter.
 
@@ -437,7 +484,29 @@ class FusedCutoffGatherMultiplyScatterFunction(torch.autograd.Function):
                 out_dtype=filter_out_dtype,
             )
 
-        return grad_x, grad_filter_out, None, None, None, None, None, None, None
+        grad_edge_weight = None
+        if ctx.needs_input_grad[2]:
+            grad_edge_weight = cfconv_edge_weight_grad(
+                x,
+                grad_output,
+                filter_out,
+                edge_weight,
+                edge_src,
+                edge_dst,
+                cutoff_upper,
+            )
+
+        return (
+            grad_x,
+            grad_filter_out,
+            grad_edge_weight,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
 
 
 def fused_cutoff_gather_multiply_scatter_autograd(

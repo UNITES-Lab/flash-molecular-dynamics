@@ -58,7 +58,14 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="CGSchNet GPU gates.")
     sub = parser.add_subparsers(dest="command", required=True)
     run = sub.add_parser("run")
-    run.add_argument("--arm", choices=_ARMS, required=True)
+    run.add_argument(
+        "--arm",
+        required=True,
+        help=(
+            f"One of {', '.join(_ARMS)}, or only:<SWITCH> / without:<SWITCH> "
+            "to isolate one kernel switch in float32."
+        ),
+    )
     run.add_argument("--model", choices=_MODELS, required=True)
     run.add_argument("--checkpoint", type=pathlib.Path, required=True)
     run.add_argument("--configurations", type=pathlib.Path, required=True)
@@ -73,7 +80,21 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
 
 
 def _set_switches(arm: str) -> None:
-    """Sets the import-time kernel switches for an arm."""
+    """Sets the import-time kernel switches for an arm.
+
+    Raises:
+        ValueError: If the arm or the switch it names is unknown.
+    """
+    if arm.startswith(("only:", "without:")):
+        mode, switch = arm.split(":", 1)
+        if switch not in _SWITCHES:
+            raise ValueError(f"Unknown switch {switch!r}.")
+        for name in _SWITCHES:
+            on = (name == switch) if mode == "only" else (name != switch)
+            os.environ[name] = "1" if on else "0"
+        return
+    if arm not in _ARMS:
+        raise ValueError(f"Unknown arm {arm!r}.")
     value = "1" if arm.startswith("flash") else "0"
     for name in _SWITCHES:
         os.environ[name] = value
@@ -181,7 +202,7 @@ def _run(args: argparse.Namespace) -> int:
         "gpu": torch.cuda.get_device_name() if on_cuda else "cpu",
         "dtype": str(dtype),
     }
-    stem = args.out / f"{args.model}__{args.arm}"
+    stem = args.out / f"{args.model}__{args.arm.replace(':', '-')}"
     try:
         if args.model == "public":
             model = pyg_forward_compatibility.load_and_adapt_old_checkpoint(
@@ -295,7 +316,19 @@ def _compare(args: argparse.Namespace) -> int:
             if record["status"] == "ok" and tensor_path.exists():
                 loaded[arm] = torch.load(tensor_path)
         rows = {}
-        for left, right in pairs:
+        isolation = sorted(
+            path.stem.split("__", 1)[1]
+            for path in args.out.glob(f"{model}__only-*.pt")
+        ) + sorted(
+            path.stem.split("__", 1)[1]
+            for path in args.out.glob(f"{model}__without-*.pt")
+        )
+        for arm in isolation:
+            record = json.loads((args.out / f"{model}__{arm}.json").read_text())
+            status[arm] = record["status"]
+            loaded[arm] = torch.load(args.out / f"{model}__{arm}.pt")
+        all_pairs = list(pairs) + [(arm, "reference") for arm in isolation]
+        for left, right in all_pairs:
             if left in loaded and right in loaded:
                 rows[f"{left} vs {right}"] = {
                     key: _diff(loaded[left], loaded[right], key)
