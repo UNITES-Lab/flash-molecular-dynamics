@@ -1,36 +1,41 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "flashmd"
-version = "0.1.0"
-description = "Fast molecular dynamics simulation with Triton-accelerated neural network force fields"
+name = "flash-molecular-dynamics"
+version = "0.2.0.dev0"
+description = "Ensemble-scale learned molecular simulation on one GPU: fast execution for published CGSchNet, MACE and BioEmu checkpoints."
 readme = { file = "README.md", content-type = "text/markdown" }
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [
-    {name = "Pingzhi Li"},
+    { name = "Pingzhi Li" },
+    { name = "Hongxuan Li" },
+    { name = "Zirui Liu" },
+    { name = "Xingcheng Lin" },
+    { name = "Tianlong Chen" },
 ]
 license = "MIT"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 dependencies = [
-    "torch>=2.6.0",
+    "torch>=2.8",
     "torch-geometric>=2.6.1",
     "torch-cluster",
     "numpy>=1.26.4",
+    "scipy>=1.14.0",
     "huggingface-hub",
     "jsonargparse[signatures]>=4.42.0",
-    "scipy>=1.14.0",
     "packaging",
     "pyyaml>=6.0.3",
     "ruamel.yaml",
     "tqdm>=4.67.1",
     "loguru>=0.7.0",
+    # Imported unconditionally by pre-unification modules; becomes the
+    # `profile` extra once they are ported (docs/design/unification.md, P2).
     "nvtx",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Chemistry",
@@ -38,40 +43,127 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+mace = [
+    "mace-torch>=0.3.16,<1.0",
+    "e3nn==0.4.4",
+    "cuequivariance-torch>=0.9",
+]
+mace-cuda12 = ["cuequivariance-ops-torch-cu12>=0.9"]
+bioemu = ["bioemu==1.4.1"]
+all = ["flash-molecular-dynamics[mace,bioemu]"]
 dev = [
-    "pytest",
-    "black",
+    "pytest>=8",
     "coverage[toml]",
+    "ruff>=0.6",
+    "mypy>=1.10",
+    "pre-commit",
 ]
 
-[tool.setuptools]
-package-dir = {"flashmd" = "src/flashmd"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
 [project.urls]
-Homepage = "https://github.com/unites-lab/flash-molecular-dynamics"
-Issues = "https://github.com/unites-lab/flash-molecular-dynamics/issues"
+Homepage = "https://github.com/UNITES-Lab/flash-molecular-dynamics"
+Issues = "https://github.com/UNITES-Lab/flash-molecular-dynamics/issues"
 
 [project.scripts]
 flashmd-langevin = "flashmd.scripts.nvt_langevin:main"
 flashmd-pt-langevin = "flashmd.scripts.nvt_pt_langevin:main"
 flashmd-nve-verlet = "flashmd.scripts.nve_verlet:main"
 
-[tool.black]
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# ---------------------------------------------------------------------------
+# Style: Google Python Style Guide, enforced by ruff and mypy.
+# https://google.github.io/styleguide/pyguide.html
+# ---------------------------------------------------------------------------
+[tool.ruff]
 line-length = 80
-target-version = ['py310', 'py311', 'py312']
+indent-width = 4
+target-version = "py311"
+src = ["src", "tests"]
+extend-exclude = ["benchmarks/legacy", "scripts/render_readme_gif.py"]
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # import order (Google profile below)
+    "N",    # pep8 naming
+    "D",    # docstrings (Google convention below)
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "SIM",  # simplify
+    "C4",   # comprehensions
+    "RUF",  # ruff-specific
+]
+ignore = [
+    "D105",  # magic-method docstrings are optional in the Google guide
+    "D107",  # __init__ is documented in the class docstring
+    "N803",  # tensor arguments such as `X` or `R` follow math notation
+    "N806",  # same, for local variables
+    "N999",  # module names follow upstream projects in places
+    "RUF001", "RUF002", "RUF003",  # unicode symbols in physics docs
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+force-single-line = true
+force-sort-within-sections = true
+single-line-exclusions = ["typing", "collections.abc"]
+known-first-party = ["flashmd"]
+
+[tool.ruff.lint.per-file-ignores]
+# Modules not yet ported to the Google style. Each entry is removed when its
+# module is rewritten during the unification (docs/design/unification.md).
+"src/flashmd/simulation/**" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "E741", "F401", "F841", "E711", "E712", "E722", "E731", "F403", "F405", "F821"]
+"src/flashmd/scripts/**" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E402", "E501", "F401", "F841", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/kernels/**" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "E741", "F401", "F841", "E711", "E712", "E722", "E731", "F403", "F405", "F821"]
+"src/flashmd/prior/**" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "E741", "F401", "F841", "W605", "E711", "E712", "E722", "E731", "F403", "F405", "F821"]
+"src/flashmd/neighbor_list/**" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "F841", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/data/**" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/geometry/**" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/models/schnet.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "E741", "F401", "F841", "E711", "E712", "E722", "E731", "F403", "F405", "F821"]
+"src/flashmd/models/gptq.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "F841", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/models/gradients.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/models/mlp.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/models/cutoff.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/models/utils.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/models/_module_init.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/models/pyg_forward_compatibility.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/models/radial_basis/**" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/models/__init__.py" = ["D", "F401"]
+"src/flashmd/utils.py" = ["D", "N", "UP", "B", "SIM", "C4", "RUF", "E501", "F401", "E711", "E712", "E722", "E731", "E741", "F403", "F405", "F821"]
+"src/flashmd/hub.py" = ["D", "UP"]
+"tests/**" = ["D", "N", "B", "SIM", "UP", "E501", "F401", "F841"]
+"conftest.py" = ["D", "E501"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+# Modules written in the new style are listed here and checked strictly.
+files = [
+    "src/flashmd/config.py",
+    "src/flashmd/registry.py",
+    "src/flashmd/models/base.py",
+]
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "8.0"
 addopts = "-ra"
-testpaths = [
-    "tests",
-]
+testpaths = ["tests"]
 markers = [
-    "heavy: test that should be skipped in --light mode"
+    "gpu: needs a CUDA GPU; run on the cluster (see CONTRIBUTING.md)",
+    "heavy: slow test, skipped in --light mode",
 ]
-filterwarnings = [
-    "ignore::DeprecationWarning"
-]
+filterwarnings = ["ignore::DeprecationWarning"]

@@ -1,0 +1,571 @@
+{
+  "notes": {
+    "batch_sizes": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32,
+      64
+    ],
+    "bioemu_embedding_policy": "Native BioEmu inputs use their cached AlphaFold embeddings. Cross-model sequences use deterministic T4-tiled embeddings with the exact target shapes; these inputs are for execution scaling only, not biological sample analysis.",
+    "mace_shared_policy": "RCSB heavy-atom chains are selected by sequence similarity to the SchNet input and normalized to the 20 canonical residue names."
+  },
+  "schnet_native": [
+    {
+      "id": "opep_0034",
+      "beads": 37,
+      "residues": 8,
+      "sequence": "SLEAGGRG",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/opep_0034_configurations.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/opep_0034/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/opep_0034_sim_epoch_73.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "opep_0015",
+      "beads": 39,
+      "residues": 8,
+      "sequence": "DYGCSIHP",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/opep_0015_configurations.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/opep_0015/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/opep_0015_sim_epoch_73.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "cln",
+      "beads": 49,
+      "residues": 10,
+      "sequence": "YYDPETGTWY",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/cln_configurations_single.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/cln/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/cln_sim_epoch_73-dev.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "2jof",
+      "beads": 97,
+      "residues": 20,
+      "sequence": "DAYAQWLKDGGPSSGRPPPS",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/2jof_configurations_single.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/2jof/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/2jof_sim_epoch_73-dev.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "ext_PUMA",
+      "beads": 134,
+      "residues": 27,
+      "sequence": "EEEWAREIGAQLRRIADDLNAQYERRM",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/ext_PUMA_alone_configurations.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/ext_PUMA/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/ext_PUMA_alone_sim_epoch_73.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "1fme",
+      "beads": 138,
+      "residues": 28,
+      "sequence": "EQYTAKYKGRTFRNEKELRDFIEKFKGR",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/1fme_configurations.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/1fme/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/1fme_sim_epoch_73-dev.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "1yrf",
+      "beads": 173,
+      "residues": 35,
+      "sequence": "LSDEDFKAVFGMTRSAFANLPLWKQQHLKKEKGLF",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/1yrf_configurations_single.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/1yrf/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/1yrf_sim_epoch_73-dev.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "1enh",
+      "beads": 269,
+      "residues": 54,
+      "sequence": "RPRTAFSSEQLARLKREFNENRYLTERRRQQLSSELGLNEAQIKIWFQNKRAKI",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/1enh_configurations_single.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/1enh/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/1enh_sim_epoch_73-dev.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "2nuz",
+      "beads": 273,
+      "residues": 55,
+      "sequence": "ELVLALYDYQEKSPREVTMKKGDILTLLNSTNKDWWKVEVNDRQGFVPAAYVKKL",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/2nuz_configurations.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/2nuz/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/2nuz_sim_epoch_73.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "2ci2",
+      "beads": 322,
+      "residues": 65,
+      "sequence": "NLKTEWPELVGKSVEEAKKVILQDKPEAQIIVLPVGTIVTMEYRIDRVRLFVDKLDNIAEVPRVG",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/2ci2_configurations.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/2ci2/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/2ci2_sim_epoch_73.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "3zbe",
+      "beads": 355,
+      "residues": 71,
+      "sequence": "MDYKDDDDKNRALSPMVSEFETIEQENSYNEWLRAKVATSLADPRPAIPHDEVERRMAERFAKMRKERSKQ",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/3zbe_configurations.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/3zbe/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/3zbe_sim_langevin_epoch_73.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "2a3d",
+      "beads": 360,
+      "residues": 73,
+      "sequence": "MGSWAEFKQRLAAIKTRLQALGGSEAELAAFEKEIAAFESELQAYKGKGNPEVEALRKEAAAIRDELQAYRHN",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/2a3d_configurations_single.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/2a3d/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/2a3d_sim_epoch_73-dev.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "1ris",
+      "beads": 482,
+      "residues": 97,
+      "sequence": "MRRYEVNIVLNPNLDQSQLALEKEIIQRALENYGARVEKVEELGLRRLAYPIAKDPQGYFLWYQVEMPEDRVNDLARELRIRDNVRRVMVVKSQEPF",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/1ris_configurations.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/1ris/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/1ris_sim_epoch_73.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "1d3z_PUMA",
+      "beads": 508,
+      "residues": 103,
+      "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGGEEEWAREIGAQLRRIADDLNAQYERRM",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/1d3z_with_ext_PUMA_configurations.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/1d3z_PUMA/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/1d3z_with_ext_PUMA_sim_epoch_73-dev.yaml",
+      "source": "flash-schnet"
+    },
+    {
+      "id": "mcl1_PUMA",
+      "beads": 927,
+      "residues": 189,
+      "sequence": "GPLGSEDDLYRQSLEIISRYLREQATGSKDSKPLGEAGAAGRRALETLRRVGDGVQRNHETAFQGMLRKLDIKNEGDVKSFSRVMVHVFKDGVTNWGRIVTLISFGAFVAKHLKSVNQESFIEPLAETITDVLVRTKRDWLVKQRGWDGFVEFFHVQDLEGGEEEWAREIGAQLRRIADDLNAQYERRM",
+      "structure": "flash-schnet/data/simulating_a_trained_cg_model/mcl1_with_ext_PUMA_configurations.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_native/mcl1_PUMA/benchmark.yaml",
+      "source_config": "flash-schnet/data/simulating_a_trained_cg_model/mcl1_with_ext_PUMA_sim_epoch_73.yaml",
+      "source": "flash-schnet"
+    }
+  ],
+  "schnet_shared_from_mace": [
+    {
+      "id": "chignolin",
+      "beads": 49,
+      "residues": 10,
+      "sequence": "YYDPETGTWY",
+      "structure": "submission/data/protein_size_scaling/inputs/cgschnet_from_mace/chignolin/chignolin_from_mace_configurations.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_from_mace/chignolin/benchmark.yaml",
+      "source": "flash-mace-to-schnet"
+    },
+    {
+      "id": "dhfr",
+      "beads": 785,
+      "residues": 159,
+      "sequence": "MISLIAALAVDRVIGMENAMPWNLPADLAWFKRNTLDKPVIMGRHTWESIGRPLPGRKNIILSSQPGTDDRVTWVKSVDEAIAACGDVPEIMVIGGGRVYEQFLPKAQKLYLTHIDAEVEGDTHFPDYEPDDWESVFSEFHDADAQNSHSYCFEILERR",
+      "structure": "submission/data/protein_size_scaling/inputs/cgschnet_from_mace/dhfr/dhfr_from_mace_configurations.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_from_mace/dhfr/benchmark.yaml",
+      "source": "flash-mace-to-schnet"
+    },
+    {
+      "id": "factorIX",
+      "beads": 1851,
+      "residues": 377,
+      "sequence": "YNSGKLEEFVQGNLERECMEEKCSFEEAREVFENTERTTEFWKQYVDGDQCESNPCLNGGSCKDDINSYECWCPFGFEGKNCELDVTCNIKNGRCEQFCKNSADNKVVCSCTEGYRLAENQKSCEPAVPFPCGRVSVSQTSKVVGGEDAKPGQFPWQVVLNGKVDAFCGGSIVNEKWIVTAAHCVETGVKITVVAGEHNIEETEHTEQKRNVIRIIPHHNYNAAINKYNHDIALLELDEPLVLNSYVTPICIADKEYTNIFLKFGSGYVSGWGRVFHKGRSALVLQYLRVPLVDRATCLRSTKFTIYNNMFCAGFHEGGRDSCQGDSGGPHVTEVEGTSFLTGIISWGEECAMKGKYGIYTKVSRYVNWIKEKTKLT",
+      "structure": "submission/data/protein_size_scaling/inputs/cgschnet_from_mace/factorIX/factorIX_from_mace_configurations.pt",
+      "config": "submission/data/protein_size_scaling/inputs/cgschnet_from_mace/factorIX/benchmark.yaml",
+      "source": "flash-mace-to-schnet"
+    }
+  ],
+  "mace_native": [
+    {
+      "id": "chignolin",
+      "atoms": 166,
+      "residues": 10,
+      "sequence": "YYDPETGTWY",
+      "pdb": "submission/data/protein_size_scaling/inputs/mace/chignolin_native.pdb",
+      "source": "flash-mace-native"
+    },
+    {
+      "id": "dhfr",
+      "atoms": 2489,
+      "residues": 159,
+      "sequence": "MISLIAALAVDRVIGMENAMPWNLPADLAWFKRNTLDKPVIMGRHTWESIGRPLPGRKNIILSSQPGTDDRVTWVKSVDEAIAACGDVPEIMVIGGGRVYEQFLPKAQKLYLTHIDAEVEGDTHFPDYEPDDWESVFSEFHDADAQNSHSYCFEILERR",
+      "pdb": "submission/data/protein_size_scaling/inputs/mace/dhfr_native.pdb",
+      "source": "flash-mace-native"
+    },
+    {
+      "id": "factorIX",
+      "atoms": 5807,
+      "residues": 377,
+      "sequence": "YNSGKLEEFVQGNLERECMEEKCSFEEAREVFENTERTTEFWKQYVDGDQCESNPCLNGGSCKDDINSYECWCPFGFEGKNCELDVTCNIKNGRCEQFCKNSADNKVVCSCTEGYRLAENQKSCEPAVPFPCGRVSVSQTSKVVGGEDAKPGQFPWQVVLNGKVDAFCGGSIVNEKWIVTAAHCVETGVKITVVAGEHNIEETEHTEQKRNVIRIIPHHNYNAAINKYNHDIALLELDEPLVLNSYVTPICIADKEYTNIFLKFGSGYVSGWGRVFHKGRSALVLQYLRVPLVDRATCLRSTKFTIYNNMFCAGFHEGGRDSCQGDSGGPHVTEVEGTSFLTGIISWGEECAMKGKYGIYTKVSRYVNWIKEKTKLT",
+      "pdb": "submission/data/protein_size_scaling/inputs/mace/factorIX_native.pdb",
+      "source": "flash-mace-native"
+    }
+  ],
+  "mace_shared_from_schnet": [
+    {
+      "id": "2jof",
+      "atoms": 284,
+      "residues": 20,
+      "sequence": "DAYAQWLKDGGPSSGRPPPS",
+      "target_sequence": "DAYAQWLKDGGPSSGRPPPS",
+      "sequence_match": 1.0,
+      "pdb": "submission/data/protein_size_scaling/inputs/mace/2jof_from_schnet.pdb",
+      "rcsb_id": "2JOF",
+      "rcsb_chain": "A",
+      "source": "flash-schnet-to-mace"
+    },
+    {
+      "id": "2nuz",
+      "atoms": 454,
+      "residues": 55,
+      "sequence": "ELVLALYDYQEKSPREVTMKKGDILTLLNSTNKDWWKVEVNDRQGFVPAAYVKKL",
+      "target_sequence": "ELVLALYDYQEKSPREVTMKKGDILTLLNSTNKDWWKVEVNDRQGFVPAAYVKKL",
+      "sequence_match": 1.0,
+      "pdb": "submission/data/protein_size_scaling/inputs/mace/2nuz_from_schnet.pdb",
+      "rcsb_id": "2NUZ",
+      "rcsb_chain": "A",
+      "source": "flash-schnet-to-mace"
+    },
+    {
+      "id": "1enh",
+      "atoms": 466,
+      "residues": 54,
+      "sequence": "RPRTAFSSEQLARLKREFNENRYLTERRRQQLSSELGLNEAQIKIWFQNKRAKI",
+      "target_sequence": "RPRTAFSSEQLARLKREFNENRYLTERRRQQLSSELGLNEAQIKIWFQNKRAKI",
+      "sequence_match": 1.0,
+      "pdb": "submission/data/protein_size_scaling/inputs/mace/1enh_from_schnet.pdb",
+      "rcsb_id": "1ENH",
+      "rcsb_chain": "A",
+      "source": "flash-schnet-to-mace"
+    },
+    {
+      "id": "1fme",
+      "atoms": 504,
+      "residues": 28,
+      "sequence": "EQYTAKYKGRTFRNEKELRDFIEKFKGR",
+      "target_sequence": "EQYTAKYKGRTFRNEKELRDFIEKFKGR",
+      "sequence_match": 1.0,
+      "pdb": "submission/data/protein_size_scaling/inputs/mace/1fme_from_schnet.pdb",
+      "rcsb_id": "1FME",
+      "rcsb_chain": "A",
+      "source": "flash-schnet-to-mace"
+    },
+    {
+      "id": "2ci2",
+      "atoms": 521,
+      "residues": 65,
+      "sequence": "NLKTEWPELVGKSVEEAKKVILQDKPEAQIIVLPVGTIVTMEYRIDRVRLFVDKLDNIAEVPRVG",
+      "target_sequence": "NLKTEWPELVGKSVEEAKKVILQDKPEAQIIVLPVGTIVTMEYRIDRVRLFVDKLDNIAEVPRVG",
+      "sequence_match": 1.0,
+      "pdb": "submission/data/protein_size_scaling/inputs/mace/2ci2_from_schnet.pdb",
+      "rcsb_id": "2CI2",
+      "rcsb_chain": "I",
+      "source": "flash-schnet-to-mace"
+    },
+    {
+      "id": "1yrf",
+      "atoms": 582,
+      "residues": 35,
+      "sequence": "LSDEDFKAVFGMTRSAFANLPLWKQQHLKKEKGLF",
+      "target_sequence": "LSDEDFKAVFGMTRSAFANLPLWKQQHLKKEKGLF",
+      "sequence_match": 1.0,
+      "pdb": "submission/data/protein_size_scaling/inputs/mace/1yrf_from_schnet.pdb",
+      "rcsb_id": "1YRF",
+      "rcsb_chain": "A",
+      "source": "flash-schnet-to-mace"
+    },
+    {
+      "id": "1ris",
+      "atoms": 816,
+      "residues": 97,
+      "sequence": "MRRYEVNIVLNPNLDQSQLALEKEIIQRALENYGARVEKVEELGLRRLAYPIAKDPQGYFLWYQVEMPEDRVNDLARELRIRDNVRRVMVVKSQEPF",
+      "target_sequence": "MRRYEVNIVLNPNLDQSQLALEKEIIQRALENYGARVEKVEELGLRRLAYPIAKDPQGYFLWYQVEMPEDRVNDLARELRIRDNVRRVMVVKSQEPF",
+      "sequence_match": 1.0,
+      "pdb": "submission/data/protein_size_scaling/inputs/mace/1ris_from_schnet.pdb",
+      "rcsb_id": "1RIS",
+      "rcsb_chain": "A",
+      "source": "flash-schnet-to-mace"
+    },
+    {
+      "id": "2a3d",
+      "atoms": 1140,
+      "residues": 73,
+      "sequence": "MGSWAEFKQRLAAIKTRLQALGGSEAELAAFEKEIAAFESELQAYKGKGNPEVEALRKEAAAIRDELQAYRHN",
+      "target_sequence": "MGSWAEFKQRLAAIKTRLQALGGSEAELAAFEKEIAAFESELQAYKGKGNPEVEALRKEAAAIRDELQAYRHN",
+      "sequence_match": 1.0,
+      "pdb": "submission/data/protein_size_scaling/inputs/mace/2a3d_from_schnet.pdb",
+      "rcsb_id": "2A3D",
+      "rcsb_chain": "A",
+      "source": "flash-schnet-to-mace"
+    },
+    {
+      "id": "3zbe",
+      "atoms": 1166,
+      "residues": 71,
+      "sequence": "MDYKDDDDKNRALSPMVSEFETIEQENSYNEWLRAKVATSLADPRPAIPHDEVERRMAERFAKMRKERSKQ",
+      "target_sequence": "MDYKDDDDKNRALSPMVSEFETIEQENSYNEWLRAKVATSLADPRPAIPHDEVERRMAERFAKMRKERSKQ",
+      "sequence_match": 1.0,
+      "pdb": "submission/data/protein_size_scaling/inputs/mace/3zbe_from_schnet.pdb",
+      "rcsb_id": "3ZBE",
+      "rcsb_chain": "A",
+      "source": "flash-schnet-to-mace"
+    }
+  ],
+  "bioemu_contexts": [
+    {
+      "id": "opep_0015",
+      "aliases": [
+        "opep_0015"
+      ],
+      "residues": 8,
+      "sequence": "DYGCSIHP",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/opep_0015_8aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-schnet"
+      ]
+    },
+    {
+      "id": "opep_0034",
+      "aliases": [
+        "opep_0034"
+      ],
+      "residues": 8,
+      "sequence": "SLEAGGRG",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/opep_0034_8aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-schnet"
+      ]
+    },
+    {
+      "id": "cln",
+      "aliases": [
+        "cln",
+        "chignolin"
+      ],
+      "residues": 10,
+      "sequence": "YYDPETGTWY",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/cln_10aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-mace",
+        "flash-schnet"
+      ]
+    },
+    {
+      "id": "2jof",
+      "aliases": [
+        "2jof"
+      ],
+      "residues": 20,
+      "sequence": "DAYAQWLKDGGPSSGRPPPS",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/2jof_20aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-schnet"
+      ]
+    },
+    {
+      "id": "ext_PUMA",
+      "aliases": [
+        "ext_PUMA"
+      ],
+      "residues": 27,
+      "sequence": "EEEWAREIGAQLRRIADDLNAQYERRM",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/ext_PUMA_27aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-schnet"
+      ]
+    },
+    {
+      "id": "1fme",
+      "aliases": [
+        "1fme"
+      ],
+      "residues": 28,
+      "sequence": "EQYTAKYKGRTFRNEKELRDFIEKFKGR",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/1fme_28aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-schnet"
+      ]
+    },
+    {
+      "id": "1yrf",
+      "aliases": [
+        "1yrf"
+      ],
+      "residues": 35,
+      "sequence": "LSDEDFKAVFGMTRSAFANLPLWKQQHLKKEKGLF",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/1yrf_35aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-schnet"
+      ]
+    },
+    {
+      "id": "HHH_rd1_0335",
+      "aliases": [
+        "HHH_rd1_0335"
+      ],
+      "residues": 43,
+      "sequence": "TEDEKKIQELLKRANGDVSKAEKLAQSQGNEELARRLREYANK",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/HHH_rd1_0335_43aa.fasta",
+      "embedding": "native_cached",
+      "sources": [
+        "flash-bioemu-native"
+      ]
+    },
+    {
+      "id": "1enh",
+      "aliases": [
+        "1enh"
+      ],
+      "residues": 54,
+      "sequence": "RPRTAFSSEQLARLKREFNENRYLTERRRQQLSSELGLNEAQIKIWFQNKRAKI",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/1enh_54aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-schnet"
+      ]
+    },
+    {
+      "id": "2nuz",
+      "aliases": [
+        "2nuz"
+      ],
+      "residues": 55,
+      "sequence": "ELVLALYDYQEKSPREVTMKKGDILTLLNSTNKDWWKVEVNDRQGFVPAAYVKKL",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/2nuz_55aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-schnet"
+      ]
+    },
+    {
+      "id": "2ci2",
+      "aliases": [
+        "2ci2"
+      ],
+      "residues": 65,
+      "sequence": "NLKTEWPELVGKSVEEAKKVILQDKPEAQIIVLPVGTIVTMEYRIDRVRLFVDKLDNIAEVPRVG",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/2ci2_65aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-schnet"
+      ]
+    },
+    {
+      "id": "3zbe",
+      "aliases": [
+        "3zbe"
+      ],
+      "residues": 71,
+      "sequence": "MDYKDDDDKNRALSPMVSEFETIEQENSYNEWLRAKVATSLADPRPAIPHDEVERRMAERFAKMRKERSKQ",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/3zbe_71aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-schnet"
+      ]
+    },
+    {
+      "id": "2a3d",
+      "aliases": [
+        "2a3d"
+      ],
+      "residues": 73,
+      "sequence": "MGSWAEFKQRLAAIKTRLQALGGSEAELAAFEKEIAAFESELQAYKGKGNPEVEALRKEAAAIRDELQAYRHN",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/2a3d_73aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-schnet"
+      ]
+    },
+    {
+      "id": "ubiquitin",
+      "aliases": [
+        "ubiquitin"
+      ],
+      "residues": 76,
+      "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/ubiquitin_76aa.fasta",
+      "embedding": "native_cached",
+      "sources": [
+        "flash-bioemu-native"
+      ]
+    },
+    {
+      "id": "1ris",
+      "aliases": [
+        "1ris"
+      ],
+      "residues": 97,
+      "sequence": "MRRYEVNIVLNPNLDQSQLALEKEIIQRALENYGARVEKVEELGLRRLAYPIAKDPQGYFLWYQVEMPEDRVNDLARELRIRDNVRRVMVVKSQEPF",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/1ris_97aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-schnet"
+      ]
+    },
+    {
+      "id": "dhfr",
+      "aliases": [
+        "dhfr"
+      ],
+      "residues": 159,
+      "sequence": "MISLIAALAVDRVIGMENAMPWNLPADLAWFKRNTLDKPVIMGRHTWESIGRPLPGRKNIILSSQPGTDDRVTWVKSVDEAIAACGDVPEIMVIGGGRVYEQFLPKAQKLYLTHIDAEVEGDTHFPDYEPDDWESVFSEFHDADAQNSHSYCFEILERR",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/dhfr_159aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-mace"
+      ]
+    },
+    {
+      "id": "T4_endolysin",
+      "aliases": [
+        "T4_endolysin"
+      ],
+      "residues": 164,
+      "sequence": "MNIFEMLRIDERLRLKIYKDTEGYYTIGIGHLLTKSPSLNAAKSELDKAIGRNCNGVITKDEAEKLFNQDVDAAVRGILRNAKLKPVYDSLDAVRRCALINMVFQMGETGVAGFTNSLRMLQQKRWDEAAVNLAKSIWYNQTPNRAKRVITTFRTGTWDAYKNL",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/T4_endolysin_164aa.fasta",
+      "embedding": "native_cached",
+      "sources": [
+        "flash-bioemu-native"
+      ]
+    },
+    {
+      "id": "factorIX",
+      "aliases": [
+        "factorIX"
+      ],
+      "residues": 377,
+      "sequence": "YNSGKLEEFVQGNLERECMEEKCSFEEAREVFENTERTTEFWKQYVDGDQCESNPCLNGGSCKDDINSYECWCPFGFEGKNCELDVTCNIKNGRCEQFCKNSADNKVVCSCTEGYRLAENQKSCEPAVPFPCGRVSVSQTSKVVGGEDAKPGQFPWQVVLNGKVDAFCGGSIVNEKWIVTAAHCVETGVKITVVAGEHNIEETEHTEQKRNVIRIIPHHNYNAAINKYNHDIALLELDEPLVLNSYVTPICIADKEYTNIFLKFGSGYVSGWGRVFHKGRSALVLQYLRVPLVDRATCLRSTKFTIYNNMFCAGFHEGGRDSCQGDSGGPHVTEVEGTSFLTGIISWGEECAMKGKYGIYTKVSRYVNWIKEKTKLT",
+      "fasta": "submission/data/protein_size_scaling/inputs/bioemu/factorIX_377aa.fasta",
+      "embedding": "shape_equivalent_tiled_t4",
+      "sources": [
+        "flash-mace"
+      ]
+    }
+  ],
+  "bioemu_embed_cache": "submission/data/protein_size_scaling/bioemu_embed_cache"
+}
