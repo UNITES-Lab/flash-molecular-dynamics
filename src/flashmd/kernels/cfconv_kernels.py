@@ -2,6 +2,8 @@
 Fused Triton kernels for CFConv operations.
 """
 
+import math
+
 import torch
 import triton
 import triton.language as tl
