@@ -100,8 +100,22 @@ def _reference_outputs(
     from mlcg.data import AtomicData
     from mlcg.nn import pyg_forward_compatibility
 
+    def load_model(path: pathlib.Path) -> torch.nn.Module:
+        model = pyg_forward_compatibility.load_and_adapt_old_checkpoint(path)
+        # The FlashSchNet fork of mlcg reads flags that old checkpoints lack;
+        # its simulation loader sets them to False the same way. CPU tensors
+        # ignore them, and upstream mlcg never reads them.
+        for module in model.modules():
+            for flag in ("use_triton", "use_fused_tanh_linear"):
+                name = type(module).__name__
+                if name in ("CFConv", "InteractionBlock") and not hasattr(
+                    module, flag
+                ):
+                    setattr(module, flag, False)
+        return model
+
     return _evaluate(
-        pyg_forward_compatibility.load_and_adapt_old_checkpoint,
+        load_model,
         lambda path: torch.load(path, weights_only=False),
         AtomicData,
         args,
