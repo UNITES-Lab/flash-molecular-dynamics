@@ -78,12 +78,13 @@ P1 that confirms and fixes it, or refutes it.
 | MACE | Benchmarks used MACE-MP-0 medium in vacuum; the 10k headline used `2jof_5beads.pdb` in the all-atom model; 1enh, 2nuz, 2ci2 (the 18.0x system) and 1ris contain no hydrogens; the 4.6x factor IX number timed 1 step after 3; the benchmark loop is a damped relaxation with edges built once. | open |
 | MACE | Global Triton geometry hook drops the `shifts` gradient and is not double-differentiable. | not exercised by the benchmarks (no periodic cell, no stress); must be fixed or refused in the plugin |
 | MACE | `FixedOneHotFCTP` reuses primed element groups without checking composition. | open |
-| CGSchNet | Fused CFConv autograd returns `None` for `edge_weight`; the cutoff-envelope derivative may be missing from forces. | open |
+| CGSchNet | Fused CFConv autograd returns `None` for `edge_weight`; the cutoff-envelope derivative may be missing from forces. | confirmed on GPU (public checkpoint: flash SchNet forces off by 2.0e-2, equal to the detached-envelope arm to 6e-7); the fork has the same code. Fixed on `unify` (`e22876b`): 6.7e-7. Every FlashSchNet run with the public model, including the ICML paper's, used the incomplete forces |
 | CGSchNet | `--disable_optim` does not disable `torch.compile`: the scripts set `simulation.compile_model`, but `_attach_model` reads `_compile_model_flag`. The Langevin and Verlet scripts also enable TF32 matmuls unconditionally, so the CLI reference arm was not strict float32. | fixed on `unify` (property plus TF32 only with optimizations); check whether any published baseline used these scripts |
-| CGSchNet | `fused_src_csr_grad_x` is wrong for `num_filters > 128`. | open |
+| CGSchNet | `fused_src_csr_grad_x` is wrong for `num_filters > 128`. | confirmed (forces off by 33% at 256 filters); fixed (`e22876b`). Not reached by the public checkpoint (128 filters) |
 | CGSchNet | The fused RBF backward uses `math.pi` without importing `math`, so any `GaussianBasis` model with `MLCG_USE_FUSED_RBF=1` would raise `NameError` when forces are computed. The public checkpoint pickles `ExpNormalBasis`, so the fused RBF path may never run for it; reconcile with the 1.7x Flash RBF step in the FlashSchNet ablation. | `NameError` confirmed statically (Python autograd `backward`, no `math` import); import added on `unify`; GPU parity of the fused RBF pending |
 | CGSchNet | The public checkpoint pickles `mlcg.nn.*` classes; loading needs mlcg or a class remap. | fixed in P0: `models/legacy_pickle.py`; CPU parity with upstream mlcg in `benchmarks/parity/cgschnet_cpu` |
 | CGSchNet | Kernels that run for the public checkpoint (checked on the loaded model): the Triton CFConv is on in all 4 blocks; the fused tanh-linear kernel is off in all 4, because the pickle lacks `use_fused_tanh_linear` and both FlashMD and the fork patch it to False; the fused RBF kernel never runs, because the model uses `ExpNormalBasis`; 128 filters, so the source-CSR backward bug is not reached. Reconcile with the FlashSchNet ablation steps. | open |
+| CGSchNet | The fused tanh-linear kernel ran `tl.dot` in TF32 regardless of PyTorch's precision setting (forces 6e-4, energy 3e-3 relative on random models). | fixed (`135f012`): follows `torch.get_float32_matmul_precision()`; GPU check pending. Not run by the public checkpoint |
 | CGSchNet | `gptq.py` is a plain fp16 cast; `MLCG_USE_FUSED_RBF` values other than 0 or 1 raise `NameError`; resume picks the init checkpoint. | open |
 
 ## Target layout
@@ -116,7 +117,7 @@ benchmarks/   protein-size scaling and per-model harnesses
 
 ### P1 Correctness gates
 
-- [ ] One GPU test per gate; fix what is confirmed
+- [ ] One GPU test per gate; fix what is confirmed (CGSchNet done except the TF32 recheck; BioEmu A and C confirmed, fixes go into the P4 plugin; MACE in P3)
 - [ ] Rerun affected benchmarks; before and after table
 - [ ] BioEmu train-mode versus eval-mode pocket probability on one system
 

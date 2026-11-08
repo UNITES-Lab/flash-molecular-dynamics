@@ -1,0 +1,329 @@
+{
+  "public": {
+    "status": {
+      "reference_fp64": "ok",
+      "reference": "ok",
+      "reference_detached_envelope": "ok",
+      "flash": "ok",
+      "flash_w16a16": "ok"
+    },
+    "pairs": {
+      "reference vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 0.0014643105961766878,
+          "max_rel": 2.1425993835322e-05
+        },
+        "forces": {
+          "max_abs": 0.006640420227554955,
+          "max_rel": 1.92949690967709e-05
+        },
+        "energy": {
+          "max_abs": 0.004302803112750553,
+          "max_rel": 1.813238694456856e-05
+        }
+      },
+      "flash vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 1.3735914349186515,
+          "max_rel": 0.020098578603242555
+        },
+        "forces": {
+          "max_abs": 1.3715519286735969,
+          "max_rel": 0.003985297793136476
+        },
+        "energy": {
+          "max_abs": 0.004272285534625553,
+          "max_rel": 1.8003783213309316e-05
+        }
+      },
+      "flash vs reference": {
+        "schnet_forces": {
+          "max_abs": 1.3741989135742188,
+          "max_rel": 0.0201072885865163
+        },
+        "forces": {
+          "max_abs": 1.37420654296875,
+          "max_rel": 0.003993017052922861
+        },
+        "energy": {
+          "max_abs": 0.001007080078125,
+          "max_rel": 4.243997171440188e-06
+        }
+      },
+      "flash vs reference_detached_envelope": {
+        "schnet_forces": {
+          "max_abs": 4.1961669921875e-05,
+          "max_rel": 6.265824767666066e-07
+        },
+        "forces": {
+          "max_abs": 6.103515625e-05,
+          "max_rel": 1.771709554439851e-07
+        },
+        "energy": {
+          "max_abs": 0.000732421875,
+          "max_rel": 3.0865394279369243e-06
+        }
+      },
+      "reference_detached_envelope vs reference": {
+        "schnet_forces": {
+          "max_abs": 1.3742141723632812,
+          "max_rel": 0.02010751185322982
+        },
+        "forces": {
+          "max_abs": 1.37420654296875,
+          "max_rel": 0.003993017052922861
+        },
+        "energy": {
+          "max_abs": 0.00067138671875,
+          "max_rel": 2.829331447626792e-06
+        }
+      },
+      "flash_w16a16 vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 1.3685026287663078,
+          "max_rel": 0.020024118492434132
+        },
+        "forces": {
+          "max_abs": 1.3664554931267219,
+          "max_rel": 0.003970489157084711
+        },
+        "energy": {
+          "max_abs": 0.05836961055248935,
+          "max_rel": 0.00024597462087103095
+        }
+      },
+      "flash_w16a16 vs flash": {
+        "schnet_forces": {
+          "max_abs": 0.04320383071899414,
+          "max_rel": 0.000645130595138154
+        },
+        "forces": {
+          "max_abs": 0.04320526123046875,
+          "max_rel": 0.00012541490119484988
+        },
+        "energy": {
+          "max_abs": 0.0593109130859375,
+          "max_rel": 0.0002499458086364218
+        }
+      }
+    }
+  },
+  "gauss128": {
+    "status": {
+      "reference_fp64": "ok",
+      "reference": "ok",
+      "reference_detached_envelope": "ok",
+      "flash": "ok",
+      "flash_w16a16": "ok"
+    },
+    "pairs": {
+      "reference vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 4.029831208171575e-05,
+          "max_rel": 6.424048423884686e-06
+        },
+        "forces": {
+          "max_abs": 4.029831208171575e-05,
+          "max_rel": 6.424048423884686e-06
+        },
+        "energy": {
+          "max_abs": 5.575200398055813e-05,
+          "max_rel": 2.288843527254e-06
+        }
+      },
+      "flash vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 0.21963659991376888,
+          "max_rel": 0.035012785414990644
+        },
+        "forces": {
+          "max_abs": 0.21963659991376888,
+          "max_rel": 0.035012785414990644
+        },
+        "energy": {
+          "max_abs": 0.07820037119244105,
+          "max_rel": 0.0032104390991056714
+        }
+      },
+      "flash vs reference": {
+        "schnet_forces": {
+          "max_abs": 0.2196490615606308,
+          "max_rel": 0.03501466062638155
+        },
+        "forces": {
+          "max_abs": 0.2196490615606308,
+          "max_rel": 0.03501466062638155
+        },
+        "energy": {
+          "max_abs": 0.07823371887207031,
+          "max_rel": 0.003211808417197916
+        }
+      },
+      "flash vs reference_detached_envelope": {
+        "schnet_forces": {
+          "max_abs": 0.003947556018829346,
+          "max_rel": 0.0006398330871215605
+        },
+        "forces": {
+          "max_abs": 0.003947556018829346,
+          "max_rel": 0.0006398330871215605
+        },
+        "energy": {
+          "max_abs": 0.07823371887207031,
+          "max_rel": 0.003211807914201027
+        }
+      },
+      "reference_detached_envelope vs reference": {
+        "schnet_forces": {
+          "max_abs": 0.21960557997226715,
+          "max_rel": 0.03500772914645975
+        },
+        "forces": {
+          "max_abs": 0.21960557997226715,
+          "max_rel": 0.03500772914645975
+        },
+        "energy": {
+          "max_abs": 1.33514404296875e-05,
+          "max_rel": 5.48130261120643e-07
+        }
+      },
+      "flash_w16a16 vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 0.21970176269166958,
+          "max_rel": 0.03502317316621506
+        },
+        "forces": {
+          "max_abs": 0.21970176269166958,
+          "max_rel": 0.03502317316621506
+        },
+        "energy": {
+          "max_abs": 0.009158476270410887,
+          "max_rel": 0.0003759922089679378
+        }
+      },
+      "flash_w16a16 vs flash": {
+        "schnet_forces": {
+          "max_abs": 0.0051729679107666016,
+          "max_rel": 0.0008379511339741624
+        },
+        "forces": {
+          "max_abs": 0.0051729679107666016,
+          "max_rel": 0.0008379511339741624
+        },
+        "energy": {
+          "max_abs": 0.08072853088378906,
+          "max_rel": 0.003324276430884032
+        }
+      }
+    }
+  },
+  "exp256": {
+    "status": {
+      "reference_fp64": "ok",
+      "reference": "ok",
+      "reference_detached_envelope": "ok",
+      "flash": "ok",
+      "flash_w16a16": "ok"
+    },
+    "pairs": {
+      "reference vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 9.473291443096166e-05,
+          "max_rel": 1.8371064123640646e-05
+        },
+        "forces": {
+          "max_abs": 9.473291443096166e-05,
+          "max_rel": 1.8371064123640646e-05
+        },
+        "energy": {
+          "max_abs": 8.35052780416845e-05,
+          "max_rel": 3.671926026763578e-07
+        }
+      },
+      "flash vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 1.7136968245499578,
+          "max_rel": 0.33232836170399915
+        },
+        "forces": {
+          "max_abs": 1.7136968245499578,
+          "max_rel": 0.33232836170399915
+        },
+        "energy": {
+          "max_abs": 0.04546339694707058,
+          "max_rel": 0.0001999133880276398
+        }
+      },
+      "flash vs reference": {
+        "schnet_forces": {
+          "max_abs": 1.7136902213096619,
+          "max_rel": 0.3323266884064705
+        },
+        "forces": {
+          "max_abs": 1.7136902213096619,
+          "max_rel": 0.3323266884064705
+        },
+        "energy": {
+          "max_abs": 0.0455169677734375,
+          "max_rel": 0.00020014895430055222
+        }
+      },
+      "flash vs reference_detached_envelope": {
+        "schnet_forces": {
+          "max_abs": 1.671967089176178,
+          "max_rel": 0.323675697892637
+        },
+        "forces": {
+          "max_abs": 1.671967089176178,
+          "max_rel": 0.323675697892637
+        },
+        "energy": {
+          "max_abs": 0.0454254150390625,
+          "max_rel": 0.00019974634830529617
+        }
+      },
+      "reference_detached_envelope vs reference": {
+        "schnet_forces": {
+          "max_abs": 0.17041361331939697,
+          "max_rel": 0.03304739157030089
+        },
+        "forces": {
+          "max_abs": 0.17041361331939697,
+          "max_rel": 0.03304739157030089
+        },
+        "energy": {
+          "max_abs": 0.0001068115234375,
+          "max_rel": 4.6967572246190597e-07
+        }
+      },
+      "flash_w16a16 vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 1.7154807319634404,
+          "max_rel": 0.33267430564207584
+        },
+        "forces": {
+          "max_abs": 1.7154807319634404,
+          "max_rel": 0.33267430564207584
+        },
+        "energy": {
+          "max_abs": 0.08356434023897918,
+          "max_rel": 0.00036745231322942714
+        }
+      },
+      "flash_w16a16 vs flash": {
+        "schnet_forces": {
+          "max_abs": 0.005141556262969971,
+          "max_rel": 0.0010463803374968098
+        },
+        "forces": {
+          "max_abs": 0.005141556262969971,
+          "max_rel": 0.0010463803374968098
+        },
+        "energy": {
+          "max_abs": 0.041473388671875,
+          "max_rel": 0.00018240478359564927
+        }
+      }
+    }
+  }
+}
