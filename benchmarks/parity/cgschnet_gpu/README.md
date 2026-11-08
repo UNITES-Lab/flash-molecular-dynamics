@@ -7,11 +7,11 @@ configurations with seeded 0.05 angstrom noise. Values are max relative
 differences of the SchNet forces against the float32 reference with every
 kernel off.
 
-| Model | Run 1, `5db62a1` | Run 2, `e22876b` |
-|---|---|---|
-| public checkpoint | 2.0e-2 | 6.7e-7 |
-| random SchNet, `GaussianBasis` (fused RBF) | 3.5e-2 | 6.3e-4 |
-| random SchNet, 256 filters | 3.3e-1 | 7.8e-4 |
+| Model | Run 1, `5db62a1` | Run 2, `e22876b` | Run 3, `135f012` |
+|---|---|---|---|
+| public checkpoint | 2.0e-2 | 6.7e-7 | 6.7e-7 |
+| random SchNet, `GaussianBasis` (fused RBF) | 3.5e-2 | 6.3e-4 | 1.6e-6 |
+| random SchNet, 256 filters | 3.3e-1 | 7.8e-4 | 9.9e-7 |
 
 Run 1 found two force bugs in the fused CFConv kernels:
 
@@ -29,4 +29,10 @@ precision. The public checkpoint never runs it.
 The float32 reference itself differs from float64 by 2e-5. W16A16 filter
 networks add 6.4e-4 on the public checkpoint.
 
-`run1.summary.json` and `run2.summary.json` hold every pair.
+Run 3 confirms the precision fix: the flash path is within 1.6e-6 of the
+reference on every model. With float32 matmul precision "high" (TF32, what
+the simulation scripts set when optimizations are on) forces differ by
+8e-4 to 1.3e-3.
+
+`run1.summary.json`, `run2.summary.json` and `run3.summary.json` hold every
+pair.

@@ -1,0 +1,824 @@
+{
+  "public": {
+    "status": {
+      "reference_fp64": "ok",
+      "reference": "ok",
+      "reference_detached_envelope": "ok",
+      "flash": "ok",
+      "flash_tf32": "ok",
+      "flash_w16a16": "ok",
+      "only-MLCG_USE_CSR": "ok",
+      "only-MLCG_USE_FUSED_RBF": "ok",
+      "only-MLCG_USE_FUSED_TANH_LINEAR": "ok",
+      "only-MLCG_USE_SRC_CSR_GRAD_X": "ok",
+      "only-MLCG_USE_TRITON_MESSAGE_PASSING": "ok",
+      "without-MLCG_USE_CSR": "ok",
+      "without-MLCG_USE_FUSED_RBF": "ok",
+      "without-MLCG_USE_FUSED_TANH_LINEAR": "ok",
+      "without-MLCG_USE_SRC_CSR_GRAD_X": "ok",
+      "without-MLCG_USE_TRITON_MESSAGE_PASSING": "ok"
+    },
+    "pairs": {
+      "reference vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 0.001487198779742016,
+          "max_rel": 2.1760896882020486e-05
+        },
+        "forces": {
+          "max_abs": 0.006640420227526533,
+          "max_rel": 1.9294969096688316e-05
+        },
+        "energy": {
+          "max_abs": 0.004379097057636727,
+          "max_rel": 1.8453896270920102e-05
+        }
+      },
+      "flash vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 0.001491013477007641,
+          "max_rel": 2.1816714056539543e-05
+        },
+        "forces": {
+          "max_abs": 0.006640420227526533,
+          "max_rel": 1.9294969096688316e-05
+        },
+        "energy": {
+          "max_abs": 0.004322979692943818,
+          "max_rel": 1.821741281019516e-05
+        }
+      },
+      "flash vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.57763671875e-05,
+          "max_rel": 6.698001405687228e-07
+        },
+        "forces": {
+          "max_abs": 4.57763671875e-05,
+          "max_rel": 1.3301188204009724e-07
+        },
+        "energy": {
+          "max_abs": 0.000701904296875,
+          "max_rel": 2.9579400853802976e-06
+        }
+      },
+      "flash vs reference_detached_envelope": {
+        "schnet_forces": {
+          "max_abs": 1.3741836547851562,
+          "max_rel": 0.020519664721412888
+        },
+        "forces": {
+          "max_abs": 1.374176025390625,
+          "max_rel": 0.003988915829703617
+        },
+        "energy": {
+          "max_abs": 0.00054931640625,
+          "max_rel": 2.314903975532494e-06
+        }
+      },
+      "reference_detached_envelope vs reference": {
+        "schnet_forces": {
+          "max_abs": 1.3742141723632812,
+          "max_rel": 0.02010751185322982
+        },
+        "forces": {
+          "max_abs": 1.37420654296875,
+          "max_rel": 0.003993016698843718
+        },
+        "energy": {
+          "max_abs": 0.000579833984375,
+          "max_rel": 2.4435157227054633e-06
+        }
+      },
+      "flash_tf32 vs reference": {
+        "schnet_forces": {
+          "max_abs": 0.05628204345703125,
+          "max_rel": 0.0008235192728292448
+        },
+        "forces": {
+          "max_abs": 0.0562896728515625,
+          "max_rel": 0.00016356027761530622
+        },
+        "energy": {
+          "max_abs": 0.232513427734375,
+          "max_rel": 0.0009798498048048908
+        }
+      },
+      "flash_w16a16 vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 0.04182853364047734,
+          "max_rel": 0.0006120408513476921
+        },
+        "forces": {
+          "max_abs": 0.04210408086044026,
+          "max_rel": 0.00012234119396224835
+        },
+        "energy": {
+          "max_abs": 0.05855271602106882,
+          "max_rel": 0.00024674624325786795
+        }
+      },
+      "flash_w16a16 vs flash": {
+        "schnet_forces": {
+          "max_abs": 0.042140960693359375,
+          "max_rel": 0.0006166071214075812
+        },
+        "forces": {
+          "max_abs": 0.042144775390625,
+          "max_rel": 0.0001224596060649162
+        },
+        "energy": {
+          "max_abs": 0.057769775390625,
+          "max_rel": 0.00024345129832654562
+        }
+      },
+      "only-MLCG_USE_CSR vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.673004150390625e-05,
+          "max_rel": 6.837543101639046e-07
+        },
+        "forces": {
+          "max_abs": 6.103515625e-05,
+          "max_rel": 1.7734917605346298e-07
+        },
+        "energy": {
+          "max_abs": 0.0004730224609375,
+          "max_rel": 1.9933944053649833e-06
+        }
+      },
+      "only-MLCG_USE_FUSED_RBF vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.38690185546875e-05,
+          "max_rel": 6.418918013783594e-07
+        },
+        "forces": {
+          "max_abs": 4.57763671875e-05,
+          "max_rel": 1.3301188204009724e-07
+        },
+        "energy": {
+          "max_abs": 0.0005340576171875,
+          "max_rel": 2.2506065867024004e-06
+        }
+      },
+      "only-MLCG_USE_FUSED_TANH_LINEAR vs reference": {
+        "schnet_forces": {
+          "max_abs": 3.4332275390625e-05,
+          "max_rel": 5.023501054265421e-07
+        },
+        "forces": {
+          "max_abs": 3.814697265625e-05,
+          "max_rel": 1.1084323503341435e-07
+        },
+        "energy": {
+          "max_abs": 0.0006103515625,
+          "max_rel": 2.572121813374172e-06
+        }
+      },
+      "only-MLCG_USE_SRC_CSR_GRAD_X vs reference": {
+        "schnet_forces": {
+          "max_abs": 3.814697265625e-05,
+          "max_rel": 5.58166783807269e-07
+        },
+        "forces": {
+          "max_abs": 6.103515625e-05,
+          "max_rel": 1.7734917605346298e-07
+        },
+        "energy": {
+          "max_abs": 0.0009613037109375,
+          "max_rel": 4.0510918560643205e-06
+        }
+      },
+      "only-MLCG_USE_TRITON_MESSAGE_PASSING vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.291534423828125e-05,
+          "max_rel": 6.279376317831777e-07
+        },
+        "forces": {
+          "max_abs": 4.291534423828125e-05,
+          "max_rel": 1.2469863941259116e-07
+        },
+        "energy": {
+          "max_abs": 0.00067138671875,
+          "max_rel": 2.829333994711589e-06
+        }
+      },
+      "without-MLCG_USE_CSR vs reference": {
+        "schnet_forces": {
+          "max_abs": 3.814697265625e-05,
+          "max_rel": 5.58166783807269e-07
+        },
+        "forces": {
+          "max_abs": 3.814697265625e-05,
+          "max_rel": 1.1084323503341435e-07
+        },
+        "energy": {
+          "max_abs": 0.000518798828125,
+          "max_rel": 2.186303541368046e-06
+        }
+      },
+      "without-MLCG_USE_FUSED_RBF vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.9591064453125e-05,
+          "max_rel": 7.256168189494497e-07
+        },
+        "forces": {
+          "max_abs": 5.340576171875e-05,
+          "max_rel": 1.551805290467801e-07
+        },
+        "energy": {
+          "max_abs": 0.0006866455078125,
+          "max_rel": 2.8936370400459433e-06
+        }
+      },
+      "without-MLCG_USE_FUSED_TANH_LINEAR vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.673004150390625e-05,
+          "max_rel": 6.837543101639046e-07
+        },
+        "forces": {
+          "max_abs": 4.57763671875e-05,
+          "max_rel": 1.3301188204009724e-07
+        },
+        "energy": {
+          "max_abs": 0.000732421875,
+          "max_rel": 3.086546176049006e-06
+        }
+      },
+      "without-MLCG_USE_SRC_CSR_GRAD_X vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.863739013671875e-05,
+          "max_rel": 7.11662649354268e-07
+        },
+        "forces": {
+          "max_abs": 4.9591064453125e-05,
+          "max_rel": 1.4409620554343866e-07
+        },
+        "energy": {
+          "max_abs": 0.0007476806640625,
+          "max_rel": 3.1508492213833604e-06
+        }
+      },
+      "without-MLCG_USE_TRITON_MESSAGE_PASSING vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.2438507080078125e-05,
+          "max_rel": 6.209605469855868e-07
+        },
+        "forces": {
+          "max_abs": 4.57763671875e-05,
+          "max_rel": 1.3301188204009724e-07
+        },
+        "energy": {
+          "max_abs": 0.0006866455078125,
+          "max_rel": 2.8936370400459433e-06
+        }
+      }
+    }
+  },
+  "gauss128": {
+    "status": {
+      "reference_fp64": "ok",
+      "reference": "ok",
+      "reference_detached_envelope": "ok",
+      "flash": "ok",
+      "flash_tf32": "ok",
+      "flash_w16a16": "ok",
+      "only-MLCG_USE_CSR": "ok",
+      "only-MLCG_USE_FUSED_RBF": "ok",
+      "only-MLCG_USE_FUSED_TANH_LINEAR": "ok",
+      "only-MLCG_USE_SRC_CSR_GRAD_X": "ok",
+      "only-MLCG_USE_TRITON_MESSAGE_PASSING": "ok",
+      "without-MLCG_USE_CSR": "ok",
+      "without-MLCG_USE_FUSED_RBF": "ok",
+      "without-MLCG_USE_FUSED_TANH_LINEAR": "ok",
+      "without-MLCG_USE_SRC_CSR_GRAD_X": "ok",
+      "without-MLCG_USE_TRITON_MESSAGE_PASSING": "ok"
+    },
+    "pairs": {
+      "reference vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 4.1609614266996386e-05,
+          "max_rel": 6.6330861800941015e-06
+        },
+        "forces": {
+          "max_abs": 4.1609614266996386e-05,
+          "max_rel": 6.6330861800941015e-06
+        },
+        "energy": {
+          "max_abs": 4.621526079873206e-05,
+          "max_rel": 1.8973219433766168e-06
+        }
+      },
+      "flash vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 3.9955585374479297e-05,
+          "max_rel": 6.369413555829146e-06
+        },
+        "forces": {
+          "max_abs": 3.9955585374479297e-05,
+          "max_rel": 6.369413555829146e-06
+        },
+        "energy": {
+          "max_abs": 6.719609575966956e-05,
+          "max_rel": 2.758669426302476e-06
+        }
+      },
+      "flash vs reference": {
+        "schnet_forces": {
+          "max_abs": 1.0013580322265625e-05,
+          "max_rel": 1.596283244498904e-06
+        },
+        "forces": {
+          "max_abs": 1.0013580322265625e-05,
+          "max_rel": 1.596283244498904e-06
+        },
+        "energy": {
+          "max_abs": 2.47955322265625e-05,
+          "max_rel": 1.0179567571969542e-06
+        }
+      },
+      "flash vs reference_detached_envelope": {
+        "schnet_forces": {
+          "max_abs": 0.21960539370775223,
+          "max_rel": 0.03559438246190273
+        },
+        "forces": {
+          "max_abs": 0.21960539370775223,
+          "max_rel": 0.03559438246190273
+        },
+        "energy": {
+          "max_abs": 2.47955322265625e-05,
+          "max_rel": 1.0179564383552204e-06
+        }
+      },
+      "reference_detached_envelope vs reference": {
+        "schnet_forces": {
+          "max_abs": 0.2196049988269806,
+          "max_rel": 0.03500763650502145
+        },
+        "forces": {
+          "max_abs": 0.2196049988269806,
+          "max_rel": 0.03500763650502145
+        },
+        "energy": {
+          "max_abs": 9.5367431640625e-06,
+          "max_rel": 3.9152182969113623e-07
+        }
+      },
+      "flash_tf32 vs reference": {
+        "schnet_forces": {
+          "max_abs": 0.008221328258514404,
+          "max_rel": 0.0013105770487915375
+        },
+        "forces": {
+          "max_abs": 0.008221328258514404,
+          "max_rel": 0.0013105770487915375
+        },
+        "energy": {
+          "max_abs": 0.0074825286865234375,
+          "max_rel": 0.0003071880275756655
+        }
+      },
+      "flash_w16a16 vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 0.00518689565801056,
+          "max_rel": 0.0008268551995212595
+        },
+        "forces": {
+          "max_abs": 0.00518689565801056,
+          "max_rel": 0.0008268551995212595
+        },
+        "energy": {
+          "max_abs": 0.07997833100676388,
+          "max_rel": 0.0032834314854268826
+        }
+      },
+      "flash_w16a16 vs flash": {
+        "schnet_forces": {
+          "max_abs": 0.005191326141357422,
+          "max_rel": 0.0008275582758906134
+        },
+        "forces": {
+          "max_abs": 0.005191326141357422,
+          "max_rel": 0.0008275582758906134
+        },
+        "energy": {
+          "max_abs": 0.08000564575195312,
+          "max_rel": 0.003284553133280927
+        }
+      },
+      "only-MLCG_USE_CSR vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.76837158203125e-06,
+          "max_rel": 7.601348783328113e-07
+        },
+        "forces": {
+          "max_abs": 4.76837158203125e-06,
+          "max_rel": 7.601348783328113e-07
+        },
+        "energy": {
+          "max_abs": 1.52587890625e-05,
+          "max_rel": 6.26434927505818e-07
+        }
+      },
+      "only-MLCG_USE_FUSED_RBF vs reference": {
+        "schnet_forces": {
+          "max_abs": 8.58306884765625e-06,
+          "max_rel": 1.3682427809990604e-06
+        },
+        "forces": {
+          "max_abs": 8.58306884765625e-06,
+          "max_rel": 1.3682427809990604e-06
+        },
+        "energy": {
+          "max_abs": 3.62396240234375e-05,
+          "max_rel": 1.4877829528263179e-06
+        }
+      },
+      "only-MLCG_USE_FUSED_TANH_LINEAR vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.0531158447265625e-06,
+          "max_rel": 6.461146465828897e-07
+        },
+        "forces": {
+          "max_abs": 4.0531158447265625e-06,
+          "max_rel": 6.461146465828897e-07
+        },
+        "energy": {
+          "max_abs": 1.33514404296875e-05,
+          "max_rel": 5.481305615675907e-07
+        }
+      },
+      "only-MLCG_USE_SRC_CSR_GRAD_X vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.291534423828125e-06,
+          "max_rel": 6.841213904995302e-07
+        },
+        "forces": {
+          "max_abs": 4.291534423828125e-06,
+          "max_rel": 6.841213904995302e-07
+        },
+        "energy": {
+          "max_abs": 1.1444091796875e-05,
+          "max_rel": 4.698261956293635e-07
+        }
+      },
+      "only-MLCG_USE_TRITON_MESSAGE_PASSING vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.857778549194336e-06,
+          "max_rel": 7.743874073015516e-07
+        },
+        "forces": {
+          "max_abs": 4.857778549194336e-06,
+          "max_rel": 7.743874073015516e-07
+        },
+        "energy": {
+          "max_abs": 2.09808349609375e-05,
+          "max_rel": 8.613480253204997e-07
+        }
+      },
+      "without-MLCG_USE_CSR vs reference": {
+        "schnet_forces": {
+          "max_abs": 9.298324584960938e-06,
+          "max_rel": 1.4822630127489822e-06
+        },
+        "forces": {
+          "max_abs": 9.298324584960938e-06,
+          "max_rel": 1.4822630127489822e-06
+        },
+        "energy": {
+          "max_abs": 2.09808349609375e-05,
+          "max_rel": 8.613480253204997e-07
+        }
+      },
+      "without-MLCG_USE_FUSED_RBF vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.5299530029296875e-06,
+          "max_rel": 7.221281344161708e-07
+        },
+        "forces": {
+          "max_abs": 4.5299530029296875e-06,
+          "max_rel": 7.221281344161708e-07
+        },
+        "energy": {
+          "max_abs": 1.71661376953125e-05,
+          "max_rel": 7.047392934440453e-07
+        }
+      },
+      "without-MLCG_USE_FUSED_TANH_LINEAR vs reference": {
+        "schnet_forces": {
+          "max_abs": 9.298324584960938e-06,
+          "max_rel": 1.4822630127489822e-06
+        },
+        "forces": {
+          "max_abs": 9.298324584960938e-06,
+          "max_rel": 1.4822630127489822e-06
+        },
+        "energy": {
+          "max_abs": 3.24249267578125e-05,
+          "max_rel": 1.3311742209498633e-06
+        }
+      },
+      "without-MLCG_USE_SRC_CSR_GRAD_X vs reference": {
+        "schnet_forces": {
+          "max_abs": 9.059906005859375e-06,
+          "max_rel": 1.4442562688323416e-06
+        },
+        "forces": {
+          "max_abs": 9.059906005859375e-06,
+          "max_rel": 1.4442562688323416e-06
+        },
+        "energy": {
+          "max_abs": 3.0517578125e-05,
+          "max_rel": 1.252869855011636e-06
+        }
+      },
+      "without-MLCG_USE_TRITON_MESSAGE_PASSING vs reference": {
+        "schnet_forces": {
+          "max_abs": 9.5367431640625e-06,
+          "max_rel": 1.5202697566656227e-06
+        },
+        "forces": {
+          "max_abs": 9.5367431640625e-06,
+          "max_rel": 1.5202697566656227e-06
+        },
+        "energy": {
+          "max_abs": 3.814697265625e-05,
+          "max_rel": 1.566087318764545e-06
+        }
+      }
+    }
+  },
+  "exp256": {
+    "status": {
+      "reference_fp64": "ok",
+      "reference": "ok",
+      "reference_detached_envelope": "ok",
+      "flash": "ok",
+      "flash_tf32": "ok",
+      "flash_w16a16": "ok",
+      "only-MLCG_USE_CSR": "ok",
+      "only-MLCG_USE_FUSED_RBF": "ok",
+      "only-MLCG_USE_FUSED_TANH_LINEAR": "ok",
+      "only-MLCG_USE_SRC_CSR_GRAD_X": "ok",
+      "only-MLCG_USE_TRITON_MESSAGE_PASSING": "ok",
+      "without-MLCG_USE_CSR": "ok",
+      "without-MLCG_USE_FUSED_RBF": "ok",
+      "without-MLCG_USE_FUSED_TANH_LINEAR": "ok",
+      "without-MLCG_USE_SRC_CSR_GRAD_X": "ok",
+      "without-MLCG_USE_TRITON_MESSAGE_PASSING": "ok"
+    },
+    "pairs": {
+      "reference vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 9.592500732291676e-05,
+          "max_rel": 1.860224053250543e-05
+        },
+        "forces": {
+          "max_abs": 9.592500732291676e-05,
+          "max_rel": 1.860224053250543e-05
+        },
+        "energy": {
+          "max_abs": 7.16854833058278e-05,
+          "max_rel": 3.1521814915746755e-07
+        }
+      },
+      "flash vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 9.49713330065105e-05,
+          "max_rel": 1.8417299404862444e-05
+        },
+        "forces": {
+          "max_abs": 9.49713330065105e-05,
+          "max_rel": 1.8417299404862444e-05
+        },
+        "energy": {
+          "max_abs": 8.448641688119096e-05,
+          "max_rel": 3.7150690390993246e-07
+        }
+      },
+      "flash vs reference": {
+        "schnet_forces": {
+          "max_abs": 5.0961971282958984e-06,
+          "max_rel": 9.882780742175335e-07
+        },
+        "forces": {
+          "max_abs": 5.0961971282958984e-06,
+          "max_rel": 9.882780742175335e-07
+        },
+        "energy": {
+          "max_abs": 7.62939453125e-05,
+          "max_rel": 3.3548265890136137e-07
+        }
+      },
+      "flash vs reference_detached_envelope": {
+        "schnet_forces": {
+          "max_abs": 0.1704115867614746,
+          "max_rel": 0.032989925019666806
+        },
+        "forces": {
+          "max_abs": 0.1704115867614746,
+          "max_rel": 0.032989925019666806
+        },
+        "energy": {
+          "max_abs": 6.103515625e-05,
+          "max_rel": 2.683861271210891e-07
+        }
+      },
+      "reference_detached_envelope vs reference": {
+        "schnet_forces": {
+          "max_abs": 0.17041170597076416,
+          "max_rel": 0.033047024744356154
+        },
+        "forces": {
+          "max_abs": 0.17041170597076416,
+          "max_rel": 0.033047024744356154
+        },
+        "energy": {
+          "max_abs": 7.62939453125e-05,
+          "max_rel": 3.3548265890136137e-07
+        }
+      },
+      "flash_tf32 vs reference": {
+        "schnet_forces": {
+          "max_abs": 0.0064629316329956055,
+          "max_rel": 0.0012533215390340018
+        },
+        "forces": {
+          "max_abs": 0.0064629316329956055,
+          "max_rel": 0.0012533215390340018
+        },
+        "energy": {
+          "max_abs": 0.13299560546875,
+          "max_rel": 0.0005848133709968531
+        }
+      },
+      "flash_w16a16 vs reference_fp64": {
+        "schnet_forces": {
+          "max_abs": 0.004796328526231131,
+          "max_rel": 0.0009301271838063574
+        },
+        "forces": {
+          "max_abs": 0.004796328526231131,
+          "max_rel": 0.0009301271838063574
+        },
+        "energy": {
+          "max_abs": 0.03723605377450667,
+          "max_rel": 0.0001637357999338997
+        }
+      },
+      "flash_w16a16 vs flash": {
+        "schnet_forces": {
+          "max_abs": 0.0047817230224609375,
+          "max_rel": 0.000927293460824163
+        },
+        "forces": {
+          "max_abs": 0.0047817230224609375,
+          "max_rel": 0.000927293460824163
+        },
+        "energy": {
+          "max_abs": 0.0373077392578125,
+          "max_rel": 0.00016405100919551197
+        }
+      },
+      "only-MLCG_USE_CSR vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.887580871582031e-06,
+          "max_rel": 9.478222466179853e-07
+        },
+        "forces": {
+          "max_abs": 4.887580871582031e-06,
+          "max_rel": 9.478222466179853e-07
+        },
+        "energy": {
+          "max_abs": 9.1552734375e-05,
+          "max_rel": 4.025791906816337e-07
+        }
+      },
+      "only-MLCG_USE_FUSED_RBF vs reference": {
+        "schnet_forces": {
+          "max_abs": 5.0067901611328125e-06,
+          "max_rel": 9.709398623891556e-07
+        },
+        "forces": {
+          "max_abs": 5.0067901611328125e-06,
+          "max_rel": 9.709398623891556e-07
+        },
+        "energy": {
+          "max_abs": 6.103515625e-05,
+          "max_rel": 2.683861271210891e-07
+        }
+      },
+      "only-MLCG_USE_FUSED_TANH_LINEAR vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.410743713378906e-06,
+          "max_rel": 8.553517835333038e-07
+        },
+        "forces": {
+          "max_abs": 4.410743713378906e-06,
+          "max_rel": 8.553517835333038e-07
+        },
+        "energy": {
+          "max_abs": 9.1552734375e-05,
+          "max_rel": 4.025791906816337e-07
+        }
+      },
+      "only-MLCG_USE_SRC_CSR_GRAD_X vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.082918167114258e-06,
+          "max_rel": 7.917783401625853e-07
+        },
+        "forces": {
+          "max_abs": 4.082918167114258e-06,
+          "max_rel": 7.917783401625853e-07
+        },
+        "energy": {
+          "max_abs": 0.0001373291015625,
+          "max_rel": 6.038687860224505e-07
+        }
+      },
+      "only-MLCG_USE_TRITON_MESSAGE_PASSING vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.202127456665039e-06,
+          "max_rel": 8.148959559337556e-07
+        },
+        "forces": {
+          "max_abs": 4.202127456665039e-06,
+          "max_rel": 8.148959559337556e-07
+        },
+        "energy": {
+          "max_abs": 4.57763671875e-05,
+          "max_rel": 2.0128959534081685e-07
+        }
+      },
+      "without-MLCG_USE_CSR vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.649162292480469e-06,
+          "max_rel": 9.015870150756446e-07
+        },
+        "forces": {
+          "max_abs": 4.649162292480469e-06,
+          "max_rel": 9.015870150756446e-07
+        },
+        "energy": {
+          "max_abs": 7.62939453125e-05,
+          "max_rel": 3.3548265890136137e-07
+        }
+      },
+      "without-MLCG_USE_FUSED_RBF vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.76837158203125e-06,
+          "max_rel": 9.247046308468149e-07
+        },
+        "forces": {
+          "max_abs": 4.76837158203125e-06,
+          "max_rel": 9.247046308468149e-07
+        },
+        "energy": {
+          "max_abs": 0.0001068115234375,
+          "max_rel": 4.6967572246190597e-07
+        }
+      },
+      "without-MLCG_USE_FUSED_TANH_LINEAR vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.5299530029296875e-06,
+          "max_rel": 8.784693993044741e-07
+        },
+        "forces": {
+          "max_abs": 4.5299530029296875e-06,
+          "max_rel": 8.784693993044741e-07
+        },
+        "energy": {
+          "max_abs": 9.1552734375e-05,
+          "max_rel": 4.025791906816337e-07
+        }
+      },
+      "without-MLCG_USE_SRC_CSR_GRAD_X vs reference": {
+        "schnet_forces": {
+          "max_abs": 5.125999450683594e-06,
+          "max_rel": 9.94057478160326e-07
+        },
+        "forces": {
+          "max_abs": 5.125999450683594e-06,
+          "max_rel": 9.94057478160326e-07
+        },
+        "energy": {
+          "max_abs": 7.62939453125e-05,
+          "max_rel": 3.3548265890136137e-07
+        }
+      },
+      "without-MLCG_USE_TRITON_MESSAGE_PASSING vs reference": {
+        "schnet_forces": {
+          "max_abs": 4.5299530029296875e-06,
+          "max_rel": 8.784693993044741e-07
+        },
+        "forces": {
+          "max_abs": 4.5299530029296875e-06,
+          "max_rel": 8.784693993044741e-07
+        },
+        "energy": {
+          "max_abs": 0.0001068115234375,
+          "max_rel": 4.6967572246190597e-07
+        }
+      }
+    }
+  }
+}

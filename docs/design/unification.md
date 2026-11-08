@@ -84,7 +84,7 @@ P1 that confirms and fixes it, or refutes it.
 | CGSchNet | The fused RBF backward uses `math.pi` without importing `math`, so any `GaussianBasis` model with `MLCG_USE_FUSED_RBF=1` would raise `NameError` when forces are computed. The public checkpoint pickles `ExpNormalBasis`, so the fused RBF path may never run for it; reconcile with the 1.7x Flash RBF step in the FlashSchNet ablation. | `NameError` confirmed statically (Python autograd `backward`, no `math` import); import added on `unify`; GPU parity of the fused RBF pending |
 | CGSchNet | The public checkpoint pickles `mlcg.nn.*` classes; loading needs mlcg or a class remap. | fixed in P0: `models/legacy_pickle.py`; CPU parity with upstream mlcg in `benchmarks/parity/cgschnet_cpu` |
 | CGSchNet | Kernels that run for the public checkpoint (checked on the loaded model): the Triton CFConv is on in all 4 blocks; the fused tanh-linear kernel is off in all 4, because the pickle lacks `use_fused_tanh_linear` and both FlashMD and the fork patch it to False; the fused RBF kernel never runs, because the model uses `ExpNormalBasis`; 128 filters, so the source-CSR backward bug is not reached. Reconcile with the FlashSchNet ablation steps. | open |
-| CGSchNet | The fused tanh-linear kernel ran `tl.dot` in TF32 regardless of PyTorch's precision setting (forces 6e-4, energy 3e-3 relative on random models). | fixed (`135f012`): follows `torch.get_float32_matmul_precision()`; GPU check pending. Not run by the public checkpoint |
+| CGSchNet | The fused tanh-linear kernel ran `tl.dot` in TF32 regardless of PyTorch's precision setting (forces 6e-4, energy 3e-3 relative on random models). | fixed (`135f012`): follows `torch.get_float32_matmul_precision()`; GPU run 3 within 1.6e-6 on every model. Not run by the public checkpoint |
 | CGSchNet | `gptq.py` is a plain fp16 cast; `MLCG_USE_FUSED_RBF` values other than 0 or 1 raise `NameError`; resume picks the init checkpoint. | open |
 
 ## Target layout
@@ -117,7 +117,7 @@ benchmarks/   protein-size scaling and per-model harnesses
 
 ### P1 Correctness gates
 
-- [ ] One GPU test per gate; fix what is confirmed (CGSchNet done except the TF32 recheck; BioEmu A and C confirmed, fixes go into the P4 plugin; MACE in P3)
+- [ ] One GPU test per gate; fix what is confirmed (CGSchNet done; BioEmu A and C confirmed, fixes go into the P4 plugin; MACE in P3)
 - [ ] Rerun affected benchmarks; before and after table
 - [ ] BioEmu train-mode versus eval-mode pocket probability on one system
 
