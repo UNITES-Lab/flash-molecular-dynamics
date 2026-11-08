@@ -15,6 +15,8 @@ Arms:
         envelope is detached from the graph. If `flash` matches this arm and
         not `reference`, the fused CFConv drops the envelope derivative.
     flash: every switch on, float32, no W16A16.
+    flash_tf32: `flash` with float32 matmul precision "high" (TF32), as the
+        simulation scripts set when optimizations are on.
     flash_w16a16: `flash` plus the W16A16 filter networks the simulation
         applies by default.
 
@@ -48,6 +50,7 @@ _ARMS = (
     "reference",
     "reference_detached_envelope",
     "flash",
+    "flash_tf32",
     "flash_w16a16",
 )
 _MODELS = ("public", "gauss128", "exp256")
@@ -191,6 +194,8 @@ def _run(args: argparse.Namespace) -> int:
     from flashmd.models import pyg_forward_compatibility
 
     dtype = torch.float64 if args.arm == "reference_fp64" else torch.float32
+    if args.arm == "flash_tf32":
+        torch.set_float32_matmul_precision("high")
     device = torch.device(args.device)
     on_cuda = device.type == "cuda"
     record: dict[str, Any] = {
@@ -201,6 +206,7 @@ def _run(args: argparse.Namespace) -> int:
         "cuda": torch.version.cuda,
         "gpu": torch.cuda.get_device_name() if on_cuda else "cpu",
         "dtype": str(dtype),
+        "float32_matmul_precision": torch.get_float32_matmul_precision(),
     }
     stem = args.out / f"{args.model}__{args.arm.replace(':', '-')}"
     try:
@@ -297,6 +303,7 @@ def _compare(args: argparse.Namespace) -> int:
         ("flash", "reference"),
         ("flash", "reference_detached_envelope"),
         ("reference_detached_envelope", "reference"),
+        ("flash_tf32", "reference"),
         ("flash_w16a16", "reference_fp64"),
         ("flash_w16a16", "flash"),
     )

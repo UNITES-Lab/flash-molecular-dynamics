@@ -2223,6 +2223,7 @@ def fused_tanh_linear_kernel(
     stride_yn,
     # Meta-parameters
     HAS_BIAS: tl.constexpr,
+    INPUT_PRECISION: tl.constexpr,
     BLOCK_M: tl.constexpr,
     BLOCK_N: tl.constexpr,
     BLOCK_K: tl.constexpr,
@@ -2276,7 +2277,7 @@ def fused_tanh_linear_kernel(
         w_block = tl.load(w_ptrs, mask=w_mask, other=0.0)
 
         # accumulate matmul
-        acc += tl.dot(x_block, w_block)
+        acc += tl.dot(x_block, w_block, input_precision=INPUT_PRECISION)
 
     # add bias if present
     if HAS_BIAS:
@@ -2346,9 +2347,22 @@ def fused_tanh_linear(
         y.stride(0),
         y.stride(1),
         HAS_BIAS=(bias is not None),
+        INPUT_PRECISION=_float32_dot_precision(),
     )
 
     return y
+
+
+def _float32_dot_precision() -> str:
+    """Maps PyTorch's float32 matmul precision to a Triton dot precision.
+
+    `tl.dot` defaults to TF32 for float32 inputs. Following the global
+    PyTorch setting keeps the fused kernel at the precision an `nn.Linear`
+    would use: strict IEEE under "highest" (the default), TF32 otherwise.
+    """
+    if torch.get_float32_matmul_precision() == "highest":
+        return "ieee"
+    return "tf32"
 
 
 class FusedTanhLinearFunction(torch.autograd.Function):

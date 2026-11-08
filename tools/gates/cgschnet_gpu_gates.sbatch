@@ -21,7 +21,7 @@ GATES="$REPO/tools/gates/cgschnet_gpu_gates.py"
 
 for model in public gauss128 exp256; do
     for arm in reference_fp64 reference reference_detached_envelope \
-               flash flash_w16a16; do
+               flash flash_tf32 flash_w16a16; do
         "$PYTHON" -W ignore "$GATES" run --arm "$arm" --model "$model" \
             --checkpoint "$DATA/model_and_prior.pt" \
             --configurations "$DATA/1enh_configurations.pt" \
